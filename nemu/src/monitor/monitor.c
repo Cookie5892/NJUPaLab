@@ -102,6 +102,7 @@ void init_monitor(int argc, char *argv[]) {
   /* Perform some global initialization. */
 
   /* Parse arguments. */
+  /*解释命令行参数*/
   parse_args(argc, argv);
 
   /* Set random seed. */
