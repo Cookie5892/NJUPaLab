@@ -41,10 +41,10 @@ static void trace_and_difftest(Decode *_this, vaddr_t dnpc) {
 }
 
 static void exec_once(Decode *s, vaddr_t pc) {
-  s->pc = pc;
-  s->snpc = pc;
-  isa_exec_once(s);
-  cpu.pc = s->dnpc;
+  s->pc = pc;                    //设置当前指令的地址为 pc
+  s->snpc = pc;                   
+  isa_exec_once(s);              //更新指令寄存器，执行指令
+  cpu.pc = s->dnpc;              //更新下一次执行指令的地址
 #ifdef CONFIG_ITRACE
   char *p = s->logbuf;
   p += snprintf(p, sizeof(s->logbuf), FMT_WORD ":", s->pc);
@@ -74,11 +74,11 @@ static void exec_once(Decode *s, vaddr_t pc) {
 static void execute(uint64_t n) {
   Decode s;
   for (;n > 0; n --) {
-    exec_once(&s, cpu.pc);
-    g_nr_guest_inst ++;
-    trace_and_difftest(&s, cpu.pc);
+    exec_once(&s, cpu.pc);            //执行一条指令
+    g_nr_guest_inst ++;              //记录执行指令的条数
+    trace_and_difftest(&s, cpu.pc);  //打印指令信息，并与标准模型进行比较
     if (nemu_state.state != NEMU_RUNNING) break;
-    IFDEF(CONFIG_DEVICE, device_update());
+    IFDEF(CONFIG_DEVICE, device_update());    //更新设备状态
   }
 }
 
@@ -98,6 +98,7 @@ void assert_fail_msg() {
 
 /* Simulate how the CPU works. */
 void cpu_exec(uint64_t n) {
+  //根据参数 n 的值决定是否在执行过程中打印每一步的指令信息，n 的值小于 MAX_INST_TO_PRINT 时打印指令信息。
   g_print_step = (n < MAX_INST_TO_PRINT);
   switch (nemu_state.state) {
     case NEMU_END: case NEMU_ABORT: case NEMU_QUIT:
@@ -105,7 +106,7 @@ void cpu_exec(uint64_t n) {
       return;
     default: nemu_state.state = NEMU_RUNNING;
   }
-
+//返回当前时间（单位：微秒），这个时间点标记了 CPU 开始执行指令前的瞬间
   uint64_t timer_start = get_time();
 
   execute(n);
@@ -119,8 +120,8 @@ void cpu_exec(uint64_t n) {
     case NEMU_END: case NEMU_ABORT:
       Log("nemu: %s at pc = " FMT_WORD,
           (nemu_state.state == NEMU_ABORT ? ANSI_FMT("ABORT", ANSI_FG_RED) :
-           (nemu_state.halt_ret == 0 ? ANSI_FMT("HIT GOOD TRAP", ANSI_FG_GREEN) :
-            ANSI_FMT("HIT BAD TRAP", ANSI_FG_RED))),
+          (nemu_state.halt_ret == 0 ? ANSI_FMT("HIT GOOD TRAP", ANSI_FG_GREEN) :
+          ANSI_FMT("HIT BAD TRAP", ANSI_FG_RED))),
           nemu_state.halt_pc);
       // fall through
     case NEMU_QUIT: statistic();

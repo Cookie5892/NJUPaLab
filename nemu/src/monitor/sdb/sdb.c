@@ -25,6 +25,7 @@ void init_regex();
 void init_wp_pool();
 
 /* We use the `readline' library to provide more flexibility to read from stdin. */
+//函数rl_gets本身被声明为static，而不是它的返回值。文件作用域
 static char* rl_gets() {
   static char *line_read = NULL;
 
@@ -32,7 +33,7 @@ static char* rl_gets() {
     free(line_read);
     line_read = NULL;
   }
-
+//调用 readline 函数实现交互式输入
   line_read = readline("(nemu) ");
 
   if (line_read && *line_read) {
@@ -57,6 +58,7 @@ static int cmd_help(char *args);
 static struct {
   const char *name;
   const char *description;
+  //函数指针，返回值为int，参数为char *
   int (*handler) (char *);
 } cmd_table [] = {
   { "help", "Display information about all supported commands", cmd_help },
@@ -97,15 +99,19 @@ void sdb_set_batch_mode() {
 }
 
 void sdb_mainloop() {
+  //检查是否是批处理模式，如果是则直接调用cmd_c()函数执行程序
   if (is_batch_mode) {
     cmd_c(NULL);
     return;
   }
 
+  //strlen库函数函数用于计算字符串的长度，不包括字符串的结束符
   for (char *str; (str = rl_gets()) != NULL; ) {
     char *str_end = str + strlen(str);
+//str_end指向字符串的末尾，str指向字符串的开头
 
     /* extract the first token as the command */
+    //strtok库函数函数用于将字符串分割成多个部分，并以第一个参数作为分隔符。
     char *cmd = strtok(str, " ");
     if (cmd == NULL) { continue; }
 
@@ -121,7 +127,8 @@ void sdb_mainloop() {
     extern void sdl_clear_event_queue();
     sdl_clear_event_queue();
 #endif
-
+//NR_CMD是一个宏，表示cmd_table数组的长度
+//strcmp库函数函数用于比较两个字符串是否相等，如果相等则返回0
     int i;
     for (i = 0; i < NR_CMD; i ++) {
       if (strcmp(cmd, cmd_table[i].name) == 0) {
