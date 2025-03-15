@@ -44,6 +44,7 @@ static char* rl_gets() {
 }
 
 static int cmd_si(char *args){
+  printf("si %c\n", *args);
   cpu_exec(*args == '\n' ? 1 : atoi(args));
   return 0;
 }
