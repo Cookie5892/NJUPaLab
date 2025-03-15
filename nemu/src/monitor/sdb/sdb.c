@@ -44,9 +44,16 @@ static char* rl_gets() {
 }
 
 static int cmd_si(char *args){
-  printf("si %d\n", atoi(args));
-  cpu_exec(*args == '\n' ? 1 : atoi(args));
-  
+  if (args == NULL) {
+    cpu_exec(1);
+    return 0;
+  }
+
+  if (atoi(args) <= 0) {
+    printf("Please input >= 0 number\n");
+    return 0;
+  }
+  cpu_exec(atoi(args));
   return 0;
 }
 
@@ -118,7 +125,7 @@ void sdb_mainloop() {
 //str_end指向字符串的末尾，str指向字符串的开头
 
     /* extract the first token as the command */
-    //strtok库函数函数用于将字符串分割成多个部分，并以第一个参数作为分隔符。
+    //strtok库函数函数用于将字符串分割成多个部分，并以第一个参数作为分隔符，当str中没有分隔符时，strtok 返回整个字符串，即 cmd 指向 "si"
     char *cmd = strtok(str, " ");
     if (cmd == NULL) { continue; }
 
