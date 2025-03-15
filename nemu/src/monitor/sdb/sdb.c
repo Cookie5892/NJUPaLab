@@ -43,6 +43,11 @@ static char* rl_gets() {
   return line_read;
 }
 
+static int cmd_si(char *args){
+  cpu_exec(*args == '\n' ? 1 : atoi(args));
+  return 0;
+}
+
 static int cmd_c(char *args) {
   cpu_exec(-1);
   return 0;
@@ -64,7 +69,7 @@ static struct {
   { "help", "Display information about all supported commands", cmd_help },
   { "c", "Continue the execution of the program", cmd_c },
   { "q", "Exit NEMU", cmd_q },
-
+  { "si", "Let the program pause execution after stepping through N instructions", cmd_si} ,
   /* TODO: Add more commands */
 
 };
@@ -148,3 +153,9 @@ void init_sdb() {
   /* Initialize the watchpoint pool. */
   init_wp_pool();
 }
+/*这段代码定义了一个初始化 SDB（调试器）的函数 init_sdb()，其作用是为调试器的后续工作做好准备。具体步骤如下：
+编译正则表达式
+调用 init_regex() 函数，主要作用是将调试器中可能用于表达式求值的正则表达式编译处理好，以便后续在解析用户输入或者断点/watchpoint表达式时使用。
+初始化断点池（Watchpoint Pool）
+调用 init_wp_pool() 函数，用来初始化一个断点池。这个池子保存了所有设置的 watchpoint（监视点），用来跟踪变量或内存值的变化，帮助用户调试程序。
+总的来说，init_sdb() 函数完成调试器的基本配置工作，为之后的交互式调试做好了环境配置。*/
