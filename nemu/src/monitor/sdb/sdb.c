@@ -23,6 +23,7 @@ static int is_batch_mode = false;
 
 void init_regex();
 void init_wp_pool();
+void isa_reg_display();
 
 /* We use the `readline' library to provide more flexibility to read from stdin. */
 //函数rl_gets本身被声明为static，而不是它的返回值。文件作用域
@@ -33,7 +34,7 @@ static char* rl_gets() {
     free(line_read);
     line_read = NULL;
   }
-//调用 readline 函数实现交互式输入
+//调用 readline 库函数实现交互式输入
   line_read = readline("(nemu) ");
 
   if (line_read && *line_read) {
@@ -42,6 +43,7 @@ static char* rl_gets() {
 
   return line_read;
 }
+
 
 static int cmd_si(char *args){
   if (args == NULL) {
@@ -54,6 +56,11 @@ static int cmd_si(char *args){
     return 0;
   }
   cpu_exec(atoi(args));
+  return 0;
+}
+
+static int cmd_info(char *args){
+  (void)isa_reg_display;
   return 0;
 }
 
@@ -78,8 +85,11 @@ static struct {
   { "help", "Display information about all supported commands", cmd_help },
   { "c", "Continue the execution of the program", cmd_c },
   { "q", "Exit NEMU", cmd_q },
-  { "si", "Let the program pause execution after stepping through N instructions", cmd_si} ,
+
   /* TODO: Add more commands */
+  { "si", "Let the program pause execution after stepping through N instructions", cmd_si} ,
+  {"info","prantf status",cmd_info},
+
 
 };
 
