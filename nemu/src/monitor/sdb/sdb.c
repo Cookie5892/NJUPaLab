@@ -60,7 +60,7 @@ static int cmd_si(char *args){
 }
 
 static int cmd_info(char *args){
-  (void)isa_reg_display;
+  isa_reg_display();
   return 0;
 }
 
