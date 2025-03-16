@@ -56,10 +56,15 @@ static int cmd_si(char *args){
     return 0;
   }
   cpu_exec(atoi(args));
+  
   return 0;
 }
 
 static int cmd_info(char *args){
+  if(args == NULL || *args != 'f'){
+    printf("请输入正确的参数\n");
+    return 0;
+  }
   isa_reg_display();
   return 0;
 }
