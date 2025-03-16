@@ -81,7 +81,7 @@ static int cmd_x(char *args)
 {
   char *args_end = args + strlen(args);
   char *step = strtok(args, " ");
-  char *n_args = step + 2;
+  char *n_args = step + 3;
   if (n_args >= args_end)
   {
     n_args = NULL;
