@@ -1,17 +1,17 @@
 /***************************************************************************************
-* Copyright (c) 2014-2024 Zihao Yu, Nanjing University
-*
-* NEMU is licensed under Mulan PSL v2.
-* You can use this software according to the terms and conditions of the Mulan PSL v2.
-* You may obtain a copy of Mulan PSL v2 at:
-*          http://license.coscl.org.cn/MulanPSL2
-*
-* THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
-* EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
-* MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
-*
-* See the Mulan PSL v2 for more details.
-***************************************************************************************/
+ * Copyright (c) 2014-2024 Zihao Yu, Nanjing University
+ *
+ * NEMU is licensed under Mulan PSL v2.
+ * You can use this software according to the terms and conditions of the Mulan PSL v2.
+ * You may obtain a copy of Mulan PSL v2 at:
+ *          http://license.coscl.org.cn/MulanPSL2
+ *
+ * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
+ * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
+ * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
+ *
+ * See the Mulan PSL v2 for more details.
+ ***************************************************************************************/
 
 #include <isa.h>
 #include <cpu/cpu.h>
@@ -24,96 +24,132 @@ static int is_batch_mode = false;
 void init_regex();
 void init_wp_pool();
 void isa_reg_display();
+word_t vaddr_read();
 
 /* We use the `readline' library to provide more flexibility to read from stdin. */
-//函数rl_gets本身被声明为static，而不是它的返回值。文件作用域
-static char* rl_gets() {
+// 函数rl_gets本身被声明为static，而不是它的返回值。文件作用域
+static char *rl_gets()
+{
   static char *line_read = NULL;
 
-  if (line_read) {
+  if (line_read)
+  {
     free(line_read);
     line_read = NULL;
   }
-//调用 readline 库函数实现交互式输入
+  // 调用 readline 库函数实现交互式输入
   line_read = readline("(nemu) ");
 
-  if (line_read && *line_read) {
+  if (line_read && *line_read)
+  {
     add_history(line_read);
   }
 
   return line_read;
 }
 
-
-static int cmd_si(char *args){
-  if (args == NULL) {
+static int cmd_si(char *args)
+{
+  if (args == NULL)
+  {
     cpu_exec(1);
     return 0;
   }
 
-  if (atoi(args) <= 0) {
+  if (atoi(args) <= 0)
+  {
     printf("Please input >= 0 number\n");
     return 0;
   }
   cpu_exec(atoi(args));
-  
+
   return 0;
 }
 
-static int cmd_info(char *args){
-  if(args == NULL || *args != 'f'){
-    printf("请输入正确的参数\n");
+static int cmd_info(char *args)
+{
+  if (args == NULL || *args != 'f')
+  {
+    printf("请输入正确的命令\n");
     return 0;
   }
   isa_reg_display();
   return 0;
 }
 
-static int cmd_c(char *args) {
+static int cmd_x(char *args)
+{
+  char *args_end = args + strlen(args);
+  char *step = strtok(args, " ");
+  char *n_args = step + 2;
+  if (n_args >= args_end)
+  {
+    n_args = NULL;
+  }
+
+  if (step != NULL && n_args != NULL)
+  {
+    word_t val = vaddr_read(atoi(n_args), atoi(step));
+    printf("内存内容为：" FMT_WORD "\n", val);
+    return 0;
+  }
+  printf("请输入正确的命令\n");
+  return 0;
+}
+
+static int cmd_c(char *args)
+{
   cpu_exec(-1);
   return 0;
 }
 
-
-static int cmd_q(char *args) {
+static int cmd_q(char *args)
+{
   return -1;
 }
 
 static int cmd_help(char *args);
 
-static struct {
+static struct
+{
   const char *name;
   const char *description;
-  //函数指针，返回值为int，参数为char *
-  int (*handler) (char *);
-} cmd_table [] = {
-  { "help", "Display information about all supported commands", cmd_help },
-  { "c", "Continue the execution of the program", cmd_c },
-  { "q", "Exit NEMU", cmd_q },
+  // 函数指针，返回值为int，参数为char *
+  int (*handler)(char *);
+} cmd_table[] = {
+    {"help", "Display information about all supported commands", cmd_help},
+    {"c", "Continue the execution of the program", cmd_c},
+    {"q", "Exit NEMU", cmd_q},
 
-  /* TODO: Add more commands */
-  { "si", "Let the program pause execution after stepping through N instructions", cmd_si} ,
-  {"info","prantf status",cmd_info},
-
+    /* TODO: Add more commands */
+    {"si", "Let the program pause execution after stepping through N instructions", cmd_si},
+    {"info", "打印寄存器状态", cmd_info},
+    {"x", "打印内存", cmd_x},
 
 };
 
 #define NR_CMD ARRLEN(cmd_table)
 
-static int cmd_help(char *args) {
+static int cmd_help(char *args)
+{
   /* extract the first argument */
   char *arg = strtok(NULL, " ");
   int i;
 
-  if (arg == NULL) {
+  if (arg == NULL)
+  {
     /* no argument given */
-    for (i = 0; i < NR_CMD; i ++) {
+    for (i = 0; i < NR_CMD; i++)
+    {
       printf("%s - %s\n", cmd_table[i].name, cmd_table[i].description);
     }
   }
-  else {
-    for (i = 0; i < NR_CMD; i ++) {
-      if (strcmp(arg, cmd_table[i].name) == 0) {
+  else
+  {
+    for (i = 0; i < NR_CMD; i++)
+    {
+      if (strcmp(arg, cmd_table[i].name) == 0)
+      {
         printf("%s - %s\n", cmd_table[i].name, cmd_table[i].description);
         return 0;
       }
@@ -123,32 +159,40 @@ static int cmd_help(char *args) {
   return 0;
 }
 
-void sdb_set_batch_mode() {
+void sdb_set_batch_mode()
+{
   is_batch_mode = true;
 }
 
-void sdb_mainloop() {
-  //检查是否是批处理模式，如果是则直接调用cmd_c()函数执行程序
-  if (is_batch_mode) {
+void sdb_mainloop()
+{
+  // 检查是否是批处理模式，如果是则直接调用cmd_c()函数执行程序
+  if (is_batch_mode)
+  {
     cmd_c(NULL);
     return;
   }
 
-  //strlen库函数函数用于计算字符串的长度，不包括字符串的结束符
-  for (char *str; (str = rl_gets()) != NULL; ) {
+  // strlen库函数函数用于计算字符串的长度，不包括字符串的结束符
+  for (char *str; (str = rl_gets()) != NULL;)
+  {
     char *str_end = str + strlen(str);
-//str_end指向字符串的末尾，str指向字符串的开头
+    // str_end指向字符串的末尾，str指向字符串的开头
 
     /* extract the first token as the command */
-    //strtok库函数函数用于将字符串分割成多个部分，并以第一个参数作为分隔符，当str中没有分隔符时，strtok 返回整个字符串，即 cmd 指向 "si"
+    // strtok库函数函数用于将字符串分割成多个部分，并以第一个参数作为分隔符，当str中没有分隔符时，strtok 返回整个字符串，即 cmd 指向 "si"
     char *cmd = strtok(str, " ");
-    if (cmd == NULL) { continue; }
+    if (cmd == NULL)
+    {
+      continue;
+    }
 
     /* treat the remaining string as the arguments,
      * which may need further parsing
      */
     char *args = cmd + strlen(cmd) + 1;
-    if (args >= str_end) {
+    if (args >= str_end)
+    {
       args = NULL;
     }
 
@@ -156,21 +200,30 @@ void sdb_mainloop() {
     extern void sdl_clear_event_queue();
     sdl_clear_event_queue();
 #endif
-//NR_CMD是一个宏，表示cmd_table数组的长度
-//strcmp库函数函数用于比较两个字符串是否相等，如果相等则返回0
+    // NR_CMD是一个宏，表示cmd_table数组的长度
+    // strcmp库函数函数用于比较两个字符串是否相等，如果相等则返回0
     int i;
-    for (i = 0; i < NR_CMD; i ++) {
-      if (strcmp(cmd, cmd_table[i].name) == 0) {
-        if (cmd_table[i].handler(args) < 0) { return; }
+    for (i = 0; i < NR_CMD; i++)
+    {
+      if (strcmp(cmd, cmd_table[i].name) == 0)
+      {
+        if (cmd_table[i].handler(args) < 0)
+        {
+          return;
+        }
         break;
       }
     }
 
-    if (i == NR_CMD) { printf("Unknown command '%s'\n", cmd); }
+    if (i == NR_CMD)
+    {
+      printf("Unknown command '%s'\n", cmd);
+    }
   }
 }
 
-void init_sdb() {
+void init_sdb()
+{
   /* Compile the regular expressions. */
   init_regex();
 
