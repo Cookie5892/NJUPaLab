@@ -21,14 +21,14 @@
 #include <regex.h>
 
 enum {
-  TK_NOTYPE = 256, TK_EQ,
+  TK_NOTYPE = 256, TK_EQ, TK_PL, TK_MI, TK_MU, TK_DI,TK_NUM
 
   /* TODO: Add more token types */
 
 };
 
 static struct rule {
-  const char *regex;
+  const char *regex;    //不能通过指针regex修改它所指向的对象，但指针本身可以指向其他地址
   int token_type;
 } rules[] = {
 
@@ -39,6 +39,10 @@ static struct rule {
   {" +", TK_NOTYPE},    // spaces
   {"\\+", '+'},         // plus
   {"==", TK_EQ},        // equal
+  {"\\-",'-'},          // minus
+  {"\\*",'*'},          // multiple
+  {"\\/",'/'},          // division
+  {"[0-9]+",TK_NUM},    //NUMber
 };
 
 #define NR_REGEX ARRLEN(rules)
@@ -68,18 +72,18 @@ typedef struct token {
 } Token;
 
 static Token tokens[32] __attribute__((used)) = {};
-static int nr_token __attribute__((used))  = 0;
+static int nr_token __attribute__((used))  = 0;       //这个 GCC 属性用于告知编译器，即使该变量在代码中没有被显式引用，也不要将其优化掉
 
 static bool make_token(char *e) {
   int position = 0;
   int i;
-  regmatch_t pmatch;
+  regmatch_t pmatch;                    //regmatch_t是一个结构体，里面来有两个int型变量
 
-  nr_token = 0;
+  nr_token = 0;                         //用来记录当前产生的 token 数量
 
-  while (e[position] != '\0') {
+  while (e[position] != '\0') {           //传近来的字符串
     /* Try all rules one by one. */
-    for (i = 0; i < NR_REGEX; i ++) {
+    for (i = 0; i < NR_REGEX; i ++) {     //rules数组的个数
       if (regexec(&re[i], e + position, 1, &pmatch, 0) == 0 && pmatch.rm_so == 0) {
         char *substr_start = e + position;
         int substr_len = pmatch.rm_eo;
@@ -87,7 +91,7 @@ static bool make_token(char *e) {
         Log("match rules[%d] = \"%s\" at position %d with len %d: %.*s",
             i, rules[i].regex, position, substr_len, substr_len, substr_start);
 
-        position += substr_len;
+        position += substr_len;     //更新下一个传进去的字串
 
         /* TODO: Now a new token is recognized with rules[i]. Add codes
          * to record the token in the array `tokens'. For certain types
@@ -95,7 +99,20 @@ static bool make_token(char *e) {
          */
 
         switch (rules[i].token_type) {
-          default: TODO();
+          case TK_NOTYPE:
+            break;
+          case TK_NUM:
+            tokens[nr_token].type = TK_NUM;
+            strncpy(tokens[nr_token].str,substr_start,substr_len);
+            tokens[nr_token].str[substr_len] = '\n';
+            nr_token++;
+            break;
+          default:
+            tokens[nr_token].type = rules[i].token_type;
+            tokens[nr_token].str[0] = rules[i].token_type;
+            tokens[nr_token].str[1] = '\0';
+            nr_token++;
+            break;
         }
 
         break;
