@@ -89,6 +89,8 @@ static int cmd_x(char *args)
 
   if (step != NULL && n_args != NULL)
   {
+    int i = atoi(n_args), j = atoi(step);
+    printf("i=%d---%x,j=%d-----%x",i,i,j,j);
     word_t val = vaddr_read(atoi(n_args), atoi(step));
     printf("内存内容为：" FMT_WORD "\n", val);
     return 0;
