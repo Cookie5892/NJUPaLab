@@ -89,8 +89,13 @@ static int cmd_x(char *args)
 
   if (step != NULL && n_args != NULL)
   {
-    word_t val = vaddr_read(strtoul(n_args,NULL,0),atoi(step));
-    printf("内存内容为：" FMT_WORD "\n", val);
+    int len = atoi(step);
+    word_t addr = 0;
+    if(sscanf(n_args,"%x",&addr)>0){
+      for(int i = 0;i < len ;i++){
+        printf("%x:%x",addr,vaddr_read(addr,4));
+      }
+    }
     return 0;
   }
   printf("请输入正确的命令\n");
