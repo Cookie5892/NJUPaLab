@@ -93,7 +93,8 @@ static int cmd_x(char *args)
     word_t addr = 0;
     if(sscanf(n_args,"%x",&addr)>0){
       for(int i = 0;i < len ;i++){
-        printf("%x:%x",addr,vaddr_read(addr,4));
+        printf("%x:%x\n",addr,vaddr_read(addr,4));
+        addr = addr +4;
       }
     }
     return 0;
