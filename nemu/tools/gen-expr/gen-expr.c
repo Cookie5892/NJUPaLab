@@ -21,7 +21,7 @@
 #include <string.h>
 
 // this should be enough
-static char buf[65536] = {};
+static char buf[65536] = {'\0'};
 static char code_buf[65536 + 128] = {}; // a little larger than `buf`
 static char *code_format =
 "#include <stdio.h>\n"
@@ -39,6 +39,8 @@ uint32_t choose(uint32_t n){
   return result;
 }
 
+
+//生成随机数字token
 static char *gen_num(){
   uint32_t num = choose(4294967296);    //生成0～4294967296
   static char num_str[32];
@@ -46,18 +48,24 @@ static char *gen_num(){
   return num_str;
 }
 
+//随机生成运算符
 
+static char gen_rand_op(){
+  switch (choose(4)){
+    case 0: return '+';
+    case 1: return '-';
+    case 2: return '*';
+    default: return '/';
+  }
+}
 
 static void gen_rand_expr() {
 static  int indx = 0;
-  buf[0] = '\0';
   switch (choose(3)){
     case 0: strcat(buf,gen_num()); indx = strlen(buf); break;
-    case 1: buf[indx] = gen('('); indx++; gen_rand_expr(); buf[indx] = gen(')'); indx++; break;
-    default:gen_rand_expr(); buf[indx] = gen_rand_op(); indx++; gen_rand_expr();
+    case 1: buf[indx] = '(' ; buf[indx++] = '\0'; gen_rand_expr(); buf[indx] = ')'; buf[indx++] = '\0'; break;
+    default:gen_rand_expr(); buf[indx] = gen_rand_op(); buf[indx++] = '\0'; gen_rand_expr();
   } 
-
-  buf[indx] = '\0';
 }
 
 int main(int argc, char *argv[]) {
