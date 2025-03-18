@@ -25,6 +25,7 @@ void init_regex();
 void init_wp_pool();
 void isa_reg_display();
 word_t vaddr_read();
+word_t expr();
 
 /* We use the `readline' library to provide more flexibility to read from stdin. */
 // 函数rl_gets本身被声明为static，而不是它的返回值。文件作用域
@@ -105,6 +106,23 @@ static int cmd_x(char *args)
   return 0;
 }
 
+static int cmd_p(char *args){
+
+  if(args == NULL){
+    printf("请输入正确的命令\n");
+    return 0;
+  }
+  bool success = true;
+  word_t result = expr(args, &success);
+  if(!success){
+    printf("表达式解释失败\n");
+  }else {
+    printf("表达式%s的值为:%u\n",args,result);
+  }
+  return 0;
+}
+
+
 static int cmd_c(char *args)
 {
   cpu_exec(-1);
@@ -133,6 +151,7 @@ static struct
     {"si", "Let the program pause execution after stepping through N instructions", cmd_si},
     {"info", "打印寄存器状态", cmd_info},
     {"x", "打印内存", cmd_x},
+    {"p","表达式求值",cmd_p},
 
 };
 
