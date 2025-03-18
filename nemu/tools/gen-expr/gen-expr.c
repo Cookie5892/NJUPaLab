@@ -31,8 +31,33 @@ static char *code_format =
 "  return 0; "
 "}";
 
+
+//生成随机数，将随机数映射到0-n-1的范围
+uint32_t choose(uint32_t n){
+  uint32_t random_num = rand();
+  uint32_t result = random_num % n;
+  return result;
+}
+
+static char *gen_num(){
+  uint32_t num = choose(4294967296);    //生成0～4294967296
+  static char num_str[32];
+  sprintf(num_str, "%d", num);
+  return num_str;
+}
+
+
+
 static void gen_rand_expr() {
+static  int indx = 0;
   buf[0] = '\0';
+  switch (choose(3)){
+    case 0: strcat(buf,gen_num()); indx = strlen(buf); break;
+    case 1: buf[indx] = gen('('); indx++; gen_rand_expr(); buf[indx] = gen(')'); indx++; break;
+    default:gen_rand_expr(); buf[indx] = gen_rand_op(); indx++; gen_rand_expr();
+  } 
+
+  buf[indx] = '\0';
 }
 
 int main(int argc, char *argv[]) {
