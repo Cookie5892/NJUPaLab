@@ -33,6 +33,10 @@ enum
   TK_NUM,
   TK_PAL,
   TK_PAR,
+  TK_UEQ,
+  TK_HEX,
+  TK_REG,
+  DEREF,
 
   /* TODO: Add more token types */
 
@@ -56,8 +60,11 @@ static struct rule
     {"\\/", '/'},       // division
     {"[0-9]+", TK_NUM}, // NUMber
     {"\\(", '('},       // 左括号
-    {"\\)", ')'},       // 有括号
-};
+    {"\\)", ')'},       // 右括号
+    {"!=", TK_UEQ},     // 不等于
+    {"0x[0-9a-fA-F]{8}",TK_HEX}, //十六进制数
+    {"\\$[a-z][0-9]",TK_REG}, //寄存器变量
+    };
 
 #define NR_REGEX ARRLEN(rules)
 
@@ -160,7 +167,7 @@ static word_t eval(int p, int q)
   }
   else if (p == q)
   {
-    return strtol(tokens[p].str, NULL, 10);
+    return strtol(tokens[p].str, NULL, 0);
   }
   else if (check_parentheses(p, q) == true)
   {
@@ -183,6 +190,12 @@ static word_t eval(int p, int q)
       return val1 * val2;
     case '/':
       return val1 / val2;
+    case '==':
+      if((val1 - val2) == 0){
+        return 1;
+      }else{
+        return 0;
+      }
     default:
       assert(0);
     }
@@ -198,54 +211,84 @@ word_t expr(char *e, bool *success)
   }
   /* TODO: Insert codes to evaluate the expression. */
 
+  for(int i = 0; i < nr_token; i++){
+    if((tokens[i].type == '*') && i == 0 ||tokens[i-1].type == '+' ||tokens[i-1].type == '-' 
+    || tokens[i-1].type == '*' || tokens[i-1].type == '/' || tokens[i-1].type == '==')
+    {
+      tokens[i].type = DEREF;
+    }
+  }
   return eval(0, nr_token - 1);
 }
 
 // token表达式中寻找主运算符了
-static int find_main_operator(int p,int q)
+static int find_main_operator(int p, int q)
 {
   int op_c = -1;
   bool op = true;
   int j = 0;
-  for (int i = p; i <= q; i++){
-    if (tokens[i].type == '(' || tokens[i].type == ')'){
+  for (int i = p; i <= q; i++)
+  {
+    if (tokens[i].type == '(' || tokens[i].type == ')')
+    {
       j = tokens[i].type == '(' ? j + 1 : j - 1;
     }
 
     if ((tokens[i].type == '+' || tokens[i].type == '-' || tokens[i].type == '*' || tokens[i].type == '/') &&
-        j == 0){
-      switch(tokens[i].type){
-        case '+': op_c = i; op = false; break;
-        case '-': op_c = i; op = false; break;
-        case '*': if(op) { op_c = i; break; }
-        case '/': if(op) { op_c = i; break; }
-        default : break;
+        j == 0)
+    {
+      switch (tokens[i].type)
+      {
+      case '+':
+        op_c = i;
+        op = false;
+        break;
+      case '-':
+        op_c = i;
+        op = false;
+        break;
+      case '*':
+        if (op)
+        {
+          op_c = i;
+          break;
+        }
+      case '/':
+        if (op)
+        {
+          op_c = i;
+          break;
+        }
+      default:
+        break;
       }
     }
   }
   return op_c;
 }
 
-
-
-
 // 判断表达式是否被一对匹配的括号包围着, 同时检查表达式的左右括号是否匹配
-static bool check_parentheses(int p,int q){
-  if(tokens[p].type != '(' || tokens[q].type != ')'){
+static bool check_parentheses(int p, int q)
+{
+  if (tokens[p].type != '(' || tokens[q].type != ')')
+  {
     return false;
   }
 
   int count = 0;
-  for(p = p+1; p < q; p++){
-    if(tokens[p].type == '('){
+  for (p = p + 1; p < q; p++)
+  {
+    if (tokens[p].type == '(')
+    {
       count++;
     }
 
-    if(tokens[p].type == ')'){
+    if (tokens[p].type == ')')
+    {
       count--;
     }
-    if(count < 0 )
-    return false;
+    if (count < 0)
+      return false;
   }
-return (count == 0);
+  return (count == 0);
 }

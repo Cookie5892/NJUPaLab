@@ -106,22 +106,22 @@ static int cmd_x(char *args)
   return 0;
 }
 
-static int cmd_p(char *args){
+static int cmd_p(char *args)
+{
 
-  if(args == NULL){
+  if (args == NULL){
     printf("请输入正确的命令\n");
     return 0;
   }
   bool success = true;
   word_t result = expr(args, &success);
-  if(!success){
-    printf("表达式解释失败\n");
-  }else {
-    printf("表达式%s的值为:%u\n",args,result);
+  if (success){
+    printf("表达式%s的值为:%u\n", args, result);
+    return 0;
   }
+  printf("词法解析失败\n");
   return 0;
 }
-
 
 static int cmd_c(char *args)
 {
