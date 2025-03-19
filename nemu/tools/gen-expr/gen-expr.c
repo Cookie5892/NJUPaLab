@@ -19,14 +19,15 @@
 #include <time.h>
 #include <assert.h>
 #include <string.h>
+#define MAX_DEPTH 10
 
 // this should be enough
-static char buf[65536] = {'\0'};
+static char buf[65536] = {};
 static char code_buf[65536 + 128] = {}; // a little larger than `buf`
 static char *code_format =
 "#include <stdio.h>\n"
 "int main() { "
-"  unsigned result = %s; "
+"  unsigned result = (unsigned)(%s); "
 "  printf(\"%%u\", result); "
 "  return 0; "
 "}";
@@ -34,38 +35,91 @@ static char *code_format =
 
 //生成随机数，将随机数映射到0-n-1的范围
 uint32_t choose(uint32_t n){
-  uint32_t random_num = rand();
+  uint32_t random_num = random();
   uint32_t result = random_num % n;
   return result;
 }
 
 
 //生成随机数字token
-static char *gen_num(){
-  uint32_t num = choose(4294967296);    //生成0～4294967296
+static void gen_num(){
+  uint32_t num = labs(choose(100));    //生成0～4294967296
   static char num_str[32];
   sprintf(num_str, "%d", num);
-  return num_str;
+  strcat(buf,num_str);
 }
 
 //随机生成运算符
-
-static char gen_rand_op(){
+static void gen_rand_op(){
   switch (choose(4)){
-    case 0: return '+';
-    case 1: return '-';
-    case 2: return '*';
-    default: return '/';
+    case 0: 
+      strcat(buf,"+");
+      break;
+    case 1: 
+      strcat(buf,"-");
+      break;
+    case 2: 
+      strcat(buf,"*");
+      break;
+    default: 
+      strcat(buf,"/");
+      break;
   }
 }
 
-static void gen_rand_expr() {
-static  int indx = 0;
-  switch (choose(3)){
-    case 0: strcat(buf,gen_num()); indx = strlen(buf); break;
-    case 1: buf[indx] = '(' ; buf[indx++] = '\0'; gen_rand_expr(); buf[indx] = ')'; buf[indx++] = '\0'; break;
-    default:gen_rand_expr(); buf[indx] = gen_rand_op(); buf[indx++] = '\0'; gen_rand_expr();
+//生成'('或')'
+static void gen(char paren){
+    if( paren == '('){
+      strcat(buf,"(");
+    } else{
+      strcat(buf,")");
+    }
+}
+
+//随机插入空格
+static void blsp(){
+  uint32_t num_blsp = choose(5);
+  char char_blsp[6] = {0};
+  for(int i = 0 ; i < num_blsp ; i++){
+    char_blsp[i] = ' ';
+  }
+  char_blsp[num_blsp] = '\0';
+  strcat(buf,char_blsp);
+}
+
+//递归表达式的辅助函数
+static void gen_rand_expr_helper(int depth){
+  if(depth > MAX_DEPTH){
+    gen_num();
+    return;
+  }
+switch (choose(3)){
+  case 0: 
+    blsp();
+    gen_num();
+    blsp();
+    break;
+  case 1:
+    blsp();
+    gen('(');
+    blsp();
+    gen_rand_expr_helper(depth + 1);
+    blsp();
+    gen(')');
+    blsp();
+    break;
+  default:
+    gen_rand_expr_helper(depth + 1);
+    gen_rand_op();
+    gen_rand_expr_helper(depth + 1);
+    break;
   } 
+}
+
+
+static void gen_rand_expr() {
+  buf[0] = '\0';
+  gen_rand_expr_helper(0);
 }
 
 int main(int argc, char *argv[]) {
@@ -87,7 +141,7 @@ int main(int argc, char *argv[]) {
     fclose(fp);
 
     int ret = system("gcc /tmp/.code.c -o /tmp/.expr");
-    if (ret != 0) continue;
+    if (ret != 0) continue;           //如果编译失败，则重新生成表达式
 
     fp = popen("/tmp/.expr", "r");
     assert(fp != NULL);
