@@ -43,7 +43,7 @@ uint32_t choose(uint32_t n){
 
 //生成随机数字token
 static void gen_num(){
-  uint32_t num = labs(choose(100));    //生成0～4294967296
+  uint32_t num = labs(choose(100000));    //生成0～4294967296
   static char num_str[32];
   sprintf(num_str, "%d", num);
   strcat(buf,num_str);
