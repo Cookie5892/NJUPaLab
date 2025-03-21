@@ -30,10 +30,13 @@ void isa_reg_display()
   }
 }
 
-word_t isa_reg_str2val(const char *s, bool *success) {
-  int nr_regs = sizeof(regs)/sizeof(regs[0]);
-  for(int i = 0; i < nr_regs; i++){
-    if(strcmp(s,regs[i] == 0)){
+//获取寄存器的值
+word_t isa_reg_str2val(const char *s, bool *success)
+{
+  int nr_regs = sizeof(regs) / sizeof(regs[0]);
+  for (int i = 0; i < nr_regs; i++){
+    if (strcmp(s, regs[i] )== 0)
+    {
       *success = true;
       return cpu.gpr[i];
     }

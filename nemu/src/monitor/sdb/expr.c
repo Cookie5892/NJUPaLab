@@ -21,11 +21,13 @@
 #include <regex.h>
 static int find_main_operator();
 static bool check_parentheses();
+word_t isa_reg_str2val();
+word_t vaddr_read();
 
 enum
 {
   TK_NOTYPE = 256,
-  TK_EQ,
+  TK_EQ = 1,
   TK_PL,
   TK_MI,
   TK_MU,
@@ -61,7 +63,7 @@ static struct rule
     {"[0-9]+", TK_NUM}, // NUMber
     {"\\(", '('},       // 左括号
     {"\\)", ')'},       // 右括号
-    {"!=", TK_UEQ},     // 不等于
+    //{"!=", TK_UEQ},     // 不等于
     {"0x[0-9a-fA-F]{8}",TK_HEX}, //十六进制数
     {"\\$[a-z][0-9]",TK_REG}, //寄存器变量
     };
@@ -161,20 +163,25 @@ static bool make_token(char *e)
 
 static word_t eval(int p, int q)
 {
-  if (p > q)
-  {
+  if (p > q){
     return 0;
-  }
-  else if (p == q)
-  {
+  }else if (p == q){
+    if(tokens[p].type == TK_REG){
+      bool success = false;
+      word_t reg_vale = isa_reg_str2val(&tokens[p].str[1],&success);
+      if(success){
+        return reg_vale;
+      }
+      printf("获取寄存器的值失败\n");
+      return 0;
+    }
     return strtol(tokens[p].str, NULL, 0);
-  }
-  else if (check_parentheses(p, q) == true)
-  {
+  }else if (check_parentheses(p, q) == true){
     return eval(p + 1, q - 1);
-  }
-  else
-  {
+  }else if(tokens[p].type == DEREF){
+  word_t addr = eval(p + 1, q);
+  return vaddr_read(addr, 4);
+  } else{
     int op = find_main_operator(p, q);
     char op_type = tokens[op].type;
     word_t val1 = eval(p, op - 1);
@@ -190,12 +197,8 @@ static word_t eval(int p, int q)
       return val1 * val2;
     case '/':
       return val1 / val2;
-    case '==':
-      if((val1 - val2) == 0){
-        return 1;
-      }else{
-        return 0;
-      }
+    case TK_EQ:
+        return (val1 == val2 ? 1 :0);
     default:
       assert(0);
     }
@@ -212,8 +215,8 @@ word_t expr(char *e, bool *success)
   /* TODO: Insert codes to evaluate the expression. */
 
   for(int i = 0; i < nr_token; i++){
-    if((tokens[i].type == '*') && i == 0 ||tokens[i-1].type == '+' ||tokens[i-1].type == '-' 
-    || tokens[i-1].type == '*' || tokens[i-1].type == '/' || tokens[i-1].type == '==')
+    if((tokens[i].type == '*') && (i == 0 ||tokens[i-1].type == '+' ||tokens[i-1].type == '-' 
+    || tokens[i-1].type == '*' || tokens[i-1].type == '/' || tokens[i-1].type == TK_EQ ))
     {
       tokens[i].type = DEREF;
     }
