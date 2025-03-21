@@ -116,7 +116,7 @@ static int cmd_p(char *args)
   bool success = true;
   word_t result = expr(args, &success);
   if (success){
-    printf("表达式%s的值为:%u\n", args, result);
+    printf("表达式%s的值为:%08x\n", args, result);
     return 0;
   }
   printf("词法解析失败\n");
