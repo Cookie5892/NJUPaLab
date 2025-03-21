@@ -153,10 +153,13 @@ static bool make_token(char *e)
           add_token(TK_NUM,substr_start,substr_len);
           break; 
         default:
-          add_token(TK_NUM,substr_start,substr_len);
+          tokens[nr_token].type = rules[i].token_type;
+          tokens[nr_token].str[0] = rules[i].token_type;
+          tokens[nr_token].str[1] = '\0';
+          nr_token++;
           break;
         }
-        break;//for循环的
+        break;//for循环
       }
     }
 
