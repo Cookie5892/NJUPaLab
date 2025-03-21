@@ -60,7 +60,10 @@ static struct rule
     {"\\-", '-'},       // minus
     {"\\*", '*'},       // multiple
     {"\\/", '/'},       // division
-    {"0x[0-9a-fA-F]{8}",TK_HEX}, //十六进制数
+    {"0x[0-9a-fA-F]{8}",TK_HEX}, /*十六进制数，注意，必须在TK_NUM前面，当你输入 "0x80000000" 时，
+                                    正则匹配从字符串开头开始，会先尝试匹配 "[0-9]+". 字符 '0' 符合该正则，
+                                    所以就会把输入 "0x80000000" 部分地（仅取 "0"）识别为 TK_NUM，
+                                    而剩下的 "x80000000" 无法匹配任何规则，导致词法解析失败。*/
     {"[0-9]+", TK_NUM}, // NUMber
     {"\\(", '('},       // 左括号
     {"\\)", ')'},       // 右括号
@@ -101,6 +104,13 @@ typedef struct token
 static Token tokens[32] __attribute__((used)) = {};
 static int nr_token __attribute__((used)) = 0; // 这个 GCC 属性用于告知编译器，即使该变量在代码中没有被显式引用，也不要将其优化掉
 
+static void add_token(int type, const char *substr, int len){
+  tokens[nr_token].type = type;
+  strncpy(tokens[nr_token].str, substr,len);
+  tokens[nr_token].str[len] = '\0';
+  nr_token++;
+}
+
 static bool make_token(char *e)
 {
   int position = 0;
@@ -134,32 +144,19 @@ static bool make_token(char *e)
         case TK_NOTYPE:
           break;
         case TK_NUM:
-          tokens[nr_token].type = TK_NUM;
-          strncpy(tokens[nr_token].str, substr_start, substr_len);
-          tokens[nr_token].str[substr_len] = '\0';
-          nr_token++;
+          add_token(TK_NUM,substr_start,substr_len);
           break;
         case TK_REG:
-          tokens[nr_token].type = TK_REG;
-          strncpy(tokens[nr_token].str,substr_start,substr_len);
-          tokens[nr_token].str[substr_len] = '\0';
-          nr_token++;
+          add_token(TK_NUM,substr_start,substr_len);
           break;
         case TK_HEX:
-          tokens[nr_token].type = TK_HEX;
-          strncpy(tokens[nr_token].str,substr_start,substr_len);
-          tokens[nr_token].str[substr_len] = '\0';
-          nr_token++;
+          add_token(TK_NUM,substr_start,substr_len);
           break; 
         default:
-          tokens[nr_token].type = rules[i].token_type;
-          tokens[nr_token].str[0] = rules[i].token_type;
-          tokens[nr_token].str[1] = '\0';
-          nr_token++;
+          add_token(TK_NUM,substr_start,substr_len);
           break;
         }
-
-        break;
+        break;//for循环的
       }
     }
 
