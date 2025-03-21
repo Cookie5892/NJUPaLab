@@ -168,6 +168,7 @@ static word_t eval(int p, int q)
   }else if (p == q){
     if(tokens[p].type == TK_REG){
       bool success = false;
+      printf("寄存器变量：%s\n",&tokens[p].str[1]);
       word_t reg_vale = isa_reg_str2val(&tokens[p].str[1],&success);
       if(success){
         return reg_vale;
