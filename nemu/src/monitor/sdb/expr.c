@@ -150,7 +150,7 @@ static bool make_token(char *e)
           strncpy(tokens[nr_token].str,substr_start,substr_len);
           tokens[nr_token].str[substr_len] = '\0';
           nr_token++;
-          break;
+          break; 
         default:
           tokens[nr_token].type = rules[i].token_type;
           tokens[nr_token].str[0] = rules[i].token_type;
@@ -194,7 +194,7 @@ static word_t eval(int p, int q)
   word_t addr = eval(p + 1, q);
   return vaddr_read(addr, 4);
   } else{
-    
+
     int op = find_main_operator(p, q);
     char op_type = tokens[op].type;
     word_t val1 = eval(p, op - 1);
