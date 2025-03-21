@@ -144,14 +144,14 @@ static bool make_token(char *e)
         case TK_NOTYPE:
           break;
         case TK_NUM:
-          add_token(TK_NUM,substr_start,substr_len);
+          add_token(TK_NUM, substr_start, substr_len);
           break;
         case TK_REG:
-          add_token(TK_NUM,substr_start,substr_len);
+          add_token(TK_REG, substr_start, substr_len);
           break;
         case TK_HEX:
-          add_token(TK_NUM,substr_start,substr_len);
-          break; 
+          add_token(TK_HEX, substr_start, substr_len);
+          break;
         default:
           tokens[nr_token].type = rules[i].token_type;
           tokens[nr_token].str[0] = rules[i].token_type;
@@ -159,7 +159,7 @@ static bool make_token(char *e)
           nr_token++;
           break;
         }
-        break;//for循环
+        break; // for循环
       }
     }
 
@@ -173,8 +173,29 @@ static bool make_token(char *e)
   return true;
 }
 
+
+static bool find_matching_paren(int start, int q){
+  int balance = 1;
+  for (int i = start ; i<=q; i++){
+    if (tokens[i].type == '('){
+      balance++;
+    }
+    if (tokens[i].type == ')'){
+      balance--;
+    }
+    if (balance == 0){
+      if(i == q){
+        return true;
+      }else {
+      return false;
+      }
+    }
+  }
+  return false;
+}
+
 static word_t eval(int p, int q)
-{
+{ 
   if (p > q){
     return 0;
   }else if (p == q){
@@ -190,11 +211,10 @@ static word_t eval(int p, int q)
     return strtol(tokens[p].str, NULL, 0);
   }else if (check_parentheses(p, q) == true){
     return eval(p + 1, q - 1);
-  }else if(tokens[p].type == DEREF){
-  word_t addr = eval(p + 1, q);
-  return vaddr_read(addr, 4);
+  }else if((tokens[p].type == DEREF) && (find_matching_paren(p+2,q))){
+    word_t addr = eval(p + 2, q - 1);
+    return vaddr_read(addr, 4);
   } else{
-
     int op = find_main_operator(p, q);
     char op_type = tokens[op].type;
     word_t val1 = eval(p, op - 1);
@@ -209,6 +229,7 @@ static word_t eval(int p, int q)
     case '*':
       return val1 * val2;
     case '/':
+      assert(val2 != 0);
       return val1 / val2;
     case TK_EQ:
         return (val1 == val2 ? 1 :0);
@@ -283,8 +304,7 @@ static int find_main_operator(int p, int q)
 }
 
 // 判断表达式是否被一对匹配的括号包围着, 同时检查表达式的左右括号是否匹配
-static bool check_parentheses(int p, int q)
-{
+static bool check_parentheses(int p, int q){
   if (tokens[p].type != '(' || tokens[q].type != ')')
   {
     return false;
