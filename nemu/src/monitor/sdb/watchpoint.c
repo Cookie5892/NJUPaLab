@@ -28,7 +28,7 @@ typedef struct watchpoint {
 } WP;
 
 static WP wp_pool[NR_WP] = {};
-WP *head = NULL, *free_ = NULL;
+static WP *head = NULL, *free_ = NULL;
 
 void init_wp_pool() {
   int i;
@@ -72,18 +72,26 @@ void set_watchpoint(char *exp){
 
 
 bool check_watchpoint(){
-  while ( head != NULL){
-    word_t old_value = head->old_value;
-    word_t new_value = expr(head->exp, NULL);
+  WP *p = head;
+  while ( p != NULL){
+    word_t old_value = p->old_value;
+    word_t new_value = expr(p->exp, NULL);
     if (old_value != new_value){
-      head->old_value = new_value;
-      printf("watchpoint %d : %s = %d---%08x\n", head->NO, head->exp,new_value,new_value);
+      p->old_value = new_value;
+      printf("watchpoint %d : %s = %d---%08x\n", p->NO, p->exp,new_value,new_value);
       return true;
     }
   }
   return false;
   }
 
+  void list_wp(){
+    WP *p = head;
+    while ( p != NULL){
+      printf("watchpoint %d: %s---%d\n", p->NO, p->exp,p->old_value);
+      p = p->next;
+    }
+  }
 
   bool delete_wp(int NO){
     WP *before = head, *after = head->next;

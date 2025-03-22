@@ -28,7 +28,7 @@ word_t vaddr_read();
 word_t expr();
 void set_watchpoint();
 bool delete_wp();
-bool check_watchpoint();
+void list_wp();
 
 /* We use the `readline' library to provide more flexibility to read from stdin. */
 // 函数rl_gets本身被声明为static，而不是它的返回值。文件作用域
@@ -80,8 +80,8 @@ static int cmd_info(char *args)
   if ( *args == 'r'){
     isa_reg_display();
   }else {
-  check_watchpoint();
-  }
+  list_wp();
+}
   return 0;
 }
 
