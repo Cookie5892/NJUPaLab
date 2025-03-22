@@ -56,7 +56,7 @@ void free_wp(WP *wp){
   free_ = wp;
 }
 
-void set_wp(char *exp){
+void set_watchpoint(char *exp){
   WP *wp = new_wp(), *p = head;
   bool success = true;
   strcpy(wp->exp, exp);

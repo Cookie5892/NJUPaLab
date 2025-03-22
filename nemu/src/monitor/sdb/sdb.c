@@ -26,8 +26,9 @@ void init_wp_pool();
 void isa_reg_display();
 word_t vaddr_read();
 word_t expr();
-void set_wp();
+void set_watchpoint();
 bool delete_wp();
+bool check_watchpoint();
 
 /* We use the `readline' library to provide more flexibility to read from stdin. */
 // 函数rl_gets本身被声明为static，而不是它的返回值。文件作用域
@@ -79,7 +80,7 @@ static int cmd_info(char *args)
   if ( *args == 'r'){
     isa_reg_display();
   }else {
-    cpu_exec(-1);
+  check_watchpoint();
   }
   return 0;
 }
@@ -136,7 +137,7 @@ static int cmd_w(char *args){
     printf("请输入正确的命令\n");
     return 0;
   }
-  set_wp(args);
+  set_watchpoint(args);
   return 0;
 }
 
