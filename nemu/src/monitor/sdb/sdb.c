@@ -145,7 +145,8 @@ static int cmd_d(char *args){
     printf("请输入正确的命令\n");
     return 0;
   }
-  bool d_watch_success = delete_wp(atoi(args));
+  int indx = atoi(args);
+  bool d_watch_success = delete_wp(indx);
   if (d_watch_success){
     printf("删除成功\n");
     return 0;
