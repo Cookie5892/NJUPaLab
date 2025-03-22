@@ -26,6 +26,7 @@ void init_wp_pool();
 void isa_reg_display();
 word_t vaddr_read();
 word_t expr();
+void set_wp();
 
 /* We use the `readline' library to provide more flexibility to read from stdin. */
 // 函数rl_gets本身被声明为static，而不是它的返回值。文件作用域
@@ -69,12 +70,16 @@ static int cmd_si(char *args)
 
 static int cmd_info(char *args)
 {
-  if (args == NULL || *args != 'r')
-  {
+  if (args == NULL || *args != 'r' || *args != 'w'){
     printf("请输入正确的命令\n");
     return 0;
   }
-  isa_reg_display();
+
+  if ( *args == 'r'){
+    isa_reg_display();
+  }else {
+    cpu_exec(-1);
+  }
   return 0;
 }
 
@@ -123,6 +128,17 @@ static int cmd_p(char *args)
   return 0;
 }
 
+
+
+static int cmd_w(char *args){
+  if (args == NULL){
+    printf("请输入正确的命令\n");
+    return 0;
+  }
+  set_wp(args);
+  return 0;
+}
+
 static int cmd_c(char *args)
 {
   cpu_exec(-1);
@@ -152,6 +168,7 @@ static struct
     {"info", "打印寄存器状态", cmd_info},
     {"x", "打印内存", cmd_x},
     {"p","表达式求值",cmd_p},
+    {"w","设置断点",cmd_w},
 
 };
 

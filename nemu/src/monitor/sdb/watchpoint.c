@@ -16,17 +16,19 @@
 #include "sdb.h"
 
 #define NR_WP 32
+#define MAX_BUF 32
 
 typedef struct watchpoint {
   int NO;
   struct watchpoint *next;
-
+  char exp[MAX_BUF];
+  word_t old_value;
   /* TODO: Add more members if necessary */
 
 } WP;
 
 static WP wp_pool[NR_WP] = {};
-static WP *head = NULL, *free_ = NULL;
+WP *head = NULL, *free_ = NULL;
 
 void init_wp_pool() {
   int i;
@@ -39,6 +41,48 @@ void init_wp_pool() {
   free_ = wp_pool;
 }
 
+WP* new_wp(){
+  while (free_){
+    WP *p = free_;
+    free_ =free_->next;
+    return p;
+  }
+  assert(0);
+}
 
+
+void free_wp(WP *wp){
+  wp->next = free_;
+  free_ = wp;
+}
+
+void set_wp(char *exp){
+  WP *wp = new_wp(), *p = head;
+  bool success = true;
+  strcpy(wp->exp, exp);
+  wp->old_value = expr(exp, &success);
+  if (!success)
+  {
+    printf("error in expression\n");
+  }
+  head = wp;
+  wp->next = p;
+  printf("set watchpoint %d: %s-----%d\n", wp->NO, exp, wp->old_value);
+}
+
+
+bool check_watchpoint(){
+  while ( head != NULL){
+    word_t old_value = head->old_value;
+    word_t new_value = expr(head->exp, NULL);
+    if (old_value != new_value){
+      head->old_value = new_value;
+      printf("watchpoint %d : %s = %d\n", head->NO, head->exp,new_value);
+      return true;
+    }
+  }
+  printf("无监视点或无值的变化\n");
+  return false;
+  }
 /* TODO: Implement the functionality of watchpoint */
 

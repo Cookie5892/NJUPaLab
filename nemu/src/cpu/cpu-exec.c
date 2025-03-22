@@ -17,6 +17,7 @@
 #include <cpu/decode.h>
 #include <cpu/difftest.h>
 #include <locale.h>
+bool check_watchpoint();
 
 /* The assembly code of instructions executed is only output to the screen
  * when the number of instructions executed is less than this value.
@@ -38,6 +39,11 @@ static void trace_and_difftest(Decode *_this, vaddr_t dnpc) {
 #endif
   if (g_print_step) { IFDEF(CONFIG_ITRACE, puts(_this->logbuf)); }
   IFDEF(CONFIG_DIFFTEST, difftest_step(_this->pc, dnpc));
+
+  bool success_watch = check_watchpoint();
+  if(success_watch){
+    nemu_state.state = NEMU_STOP;
+  }
 }
 
 static void exec_once(Decode *s, vaddr_t pc) {
