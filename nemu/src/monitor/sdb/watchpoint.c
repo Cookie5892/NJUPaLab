@@ -77,7 +77,7 @@ bool check_watchpoint(){
     word_t new_value = expr(head->exp, NULL);
     if (old_value != new_value){
       head->old_value = new_value;
-      printf("watchpoint %d : %s = %d\n", head->NO, head->exp,new_value);
+      printf("watchpoint %d : %s = %x\n", head->NO, head->exp,new_value);
       return true;
     }
   }
