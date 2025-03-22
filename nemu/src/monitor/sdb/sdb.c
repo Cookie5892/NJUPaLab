@@ -180,7 +180,7 @@ static struct
     {"c", "Continue the execution of the program", cmd_c},
     {"q", "Exit NEMU", cmd_q},
 
-    /* TODO: Add more commands */
+  /* TODO: Add more commands 完成pa1*/
     {"si", "Let the program pause execution after stepping through N instructions", cmd_si},
     {"info", "打印寄存器状态", cmd_info},
     {"x", "打印内存", cmd_x},
