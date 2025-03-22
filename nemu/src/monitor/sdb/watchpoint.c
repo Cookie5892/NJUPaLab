@@ -44,7 +44,7 @@ void init_wp_pool() {
 WP* new_wp(){
   while (free_){
     WP *p = free_;
-    free_ =free_->next;
+    free_ = free_->next;
     return p;
   }
   assert(0);
@@ -87,6 +87,11 @@ bool check_watchpoint(){
 
   bool delete_wp(int NO){
     WP *before = head, *after = head->next;
+    if (head->NO == NO){
+      head = head->next;
+      free_wp(before);
+      return true;
+    }
     while ( after != NULL){
       if(after->NO == NO){
         before->next = after->next;
