@@ -27,6 +27,7 @@ void isa_reg_display();
 word_t vaddr_read();
 word_t expr();
 void set_wp();
+bool delete_wp();
 
 /* We use the `readline' library to provide more flexibility to read from stdin. */
 // 函数rl_gets本身被声明为static，而不是它的返回值。文件作用域
@@ -139,6 +140,20 @@ static int cmd_w(char *args){
   return 0;
 }
 
+static int cmd_d(char *args){
+  if (args == NULL){
+    printf("请输入正确的命令\n");
+    return 0;
+  }
+  bool d_watch_success = delete_wp(atoi(args));
+  if (d_watch_success){
+    printf("删除成功\n");
+    return 0;
+  }
+  printf("删除失败\n");
+  return 0;
+}
+
 static int cmd_c(char *args)
 {
   cpu_exec(-1);
@@ -169,6 +184,7 @@ static struct
     {"x", "打印内存", cmd_x},
     {"p","表达式求值",cmd_p},
     {"w","设置断点",cmd_w},
+    {"d","删除监视点",cmd_d},
 
 };
 

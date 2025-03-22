@@ -77,11 +77,27 @@ bool check_watchpoint(){
     word_t new_value = expr(head->exp, NULL);
     if (old_value != new_value){
       head->old_value = new_value;
-      printf("watchpoint %d : %s = %x\n", head->NO, head->exp,new_value);
+      printf("watchpoint %d : %s = %d---%08x\n", head->NO, head->exp,new_value,new_value);
       return true;
     }
   }
   return false;
+  }
+
+
+  bool delete_wp(int NO){
+    WP *before = head, *after = head->next;
+    while ( after != NULL){
+      if(after->NO == NO){
+        before->next = after->next;
+        after->next =NULL;
+        free_wp(after);
+        return true;
+      }
+      after = after->next;
+      before = before->next;
+    }
+    return false;
   }
 /* TODO: Implement the functionality of watchpoint */
 
