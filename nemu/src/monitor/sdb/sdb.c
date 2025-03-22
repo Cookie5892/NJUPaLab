@@ -70,7 +70,7 @@ static int cmd_si(char *args)
 
 static int cmd_info(char *args)
 {
-  if (args == NULL || *args != 'r' || *args != 'w'){
+  if (args == NULL ||( *args != 'r' && *args != 'w')){
     printf("请输入正确的命令\n");
     return 0;
   }
