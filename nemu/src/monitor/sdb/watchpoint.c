@@ -81,7 +81,6 @@ bool check_watchpoint(){
       return true;
     }
   }
-  printf("无监视点或无值的变化\n");
   return false;
   }
 /* TODO: Implement the functionality of watchpoint */
