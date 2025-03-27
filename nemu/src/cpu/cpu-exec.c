@@ -105,6 +105,7 @@ void assert_fail_msg() {
 /* Simulate how the CPU works. */
 void cpu_exec(uint64_t n) {
   //根据参数 n 的值决定是否在执行过程中打印每一步的指令信息，n 的值小于 MAX_INST_TO_PRINT 时打印指令信息。
+  //打印操作在trace_and_difftest函数中，通过判断bool型变量trace_and_difftest
   g_print_step = (n < MAX_INST_TO_PRINT);
   switch (nemu_state.state) {
     case NEMU_END: case NEMU_ABORT: case NEMU_QUIT:
@@ -122,7 +123,6 @@ void cpu_exec(uint64_t n) {
 
   switch (nemu_state.state) {
     case NEMU_RUNNING: nemu_state.state = NEMU_STOP; break;
-
     case NEMU_END: case NEMU_ABORT:
       Log("nemu: %s at pc = " FMT_WORD,
           (nemu_state.state == NEMU_ABORT ? ANSI_FMT("ABORT", ANSI_FG_RED) :
