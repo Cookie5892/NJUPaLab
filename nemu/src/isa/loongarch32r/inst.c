@@ -69,6 +69,6 @@ static int decode_exec(Decode *s) {
 }
 
 int isa_exec_once(Decode *s) {
-  s->isa.inst = inst_fetch(&s->snpc, 4);
+  s->isa.inst = inst_fetch(&s->snpc, 4); //根据物理地址获取指定长度内存中的指令，返回指令值
   return decode_exec(s);
 }

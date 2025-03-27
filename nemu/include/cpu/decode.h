@@ -20,8 +20,8 @@
 
 typedef struct Decode {
   vaddr_t pc;
-  vaddr_t snpc; // static next pc
-  vaddr_t dnpc; // dynamic next pc
+  vaddr_t snpc; // static next pc,静态的下一个指令地址，在编译时就确定了的，物理上
+  vaddr_t dnpc; // dynamic next pc,程序运行过程的的指令，逻辑上
   ISADecodeInfo isa;
   IFDEF(CONFIG_ITRACE, char logbuf[128]);
 } Decode;
