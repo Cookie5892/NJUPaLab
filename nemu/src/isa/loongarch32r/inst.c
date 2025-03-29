@@ -25,11 +25,18 @@
 enum {
   TYPE_2RI12, TYPE_1RI20,
   TYPE_N, // none
+  TYPE_riscvRI12,
 };
 
 #define src1R()  do { *src1 = R(rj); } while (0)
 #define simm12() do { *imm = SEXT(BITS(i, 21, 10), 12); } while (0)
 #define simm20() do { *imm = SEXT(BITS(i, 24, 5), 20) << 12; } while (0)
+
+//riscv32
+//SEXT当处理有限位宽的立即数时（例如 12 位、20 位），如果最高位（符号位）为1，
+//则需要将其扩展为一个完整的机器字长（例如 32 位或 64 位）的负数表示
+#define riscvsrc1R()  do { *src1 = R(rj); } while (0)
+#define riscvsimm12() do  { *imm = SEXT(BITS(i, 31, 20), 12); } while (0)
 
 static void decode_operand(Decode *s, int *rd_, word_t *src1, word_t *src2, word_t *imm, int type) {
   uint32_t i = s->isa.inst;
@@ -43,6 +50,20 @@ static void decode_operand(Decode *s, int *rd_, word_t *src1, word_t *src2, word
   }
 }
 
+static void decode_operand_isa32(Decode *s, int *rd_, word_t *src1, word_t *src2, word_t *imm, int type){
+  uint32_t i = s->isa.inst;
+  int rj = BITS(i, 19, 15);
+  *rd_ = BITS(i, 11, 7);
+  switch (type) {
+    case TYPE_riscvRI12: riscvsimm12(); riscvsrc1R(); break;
+    case TYPE_2RI12: simm12(); src1R(); break;
+    case TYPE_N: break;
+    default: panic("Unsupport type = %d", type);
+  }
+}
+
+
+
 static int decode_exec(Decode *s) {
   s->dnpc = s->snpc;
 
@@ -50,7 +71,7 @@ static int decode_exec(Decode *s) {
 #define INSTPAT_MATCH(s, name, type, ... /* execute body */ ) { \
   int rd = 0; \
   word_t src1 = 0, src2 = 0, imm = 0; \
-  decode_operand(s, &rd, &src1, &src2, &imm, concat(TYPE_, type)); \
+  decode_operand_isa32(s, &rd, &src1, &src2, &imm, concat(TYPE_, type)); \
   __VA_ARGS__ ; \
 }
 
@@ -58,6 +79,7 @@ static int decode_exec(Decode *s) {
   INSTPAT("0001110 ????? ????? ????? ????? ?????" , pcaddu12i, 1RI20 , R(rd) = s->pc + imm);
   INSTPAT("0010100010 ???????????? ????? ?????"   , ld.w     , 2RI12 , R(rd) = Mr(src1 + imm, 4));
   INSTPAT("0010100110 ???????????? ????? ?????"   , st.w     , 2RI12 , Mw(src1 + imm, 4, R(rd)));
+  INSTPAT("???????????? ????? ??? ????? 0010011"  , addi     , riscvRI12  , R(rd) = src1 + imm);
 
   INSTPAT("0000 0000 0010 10100 ????? ????? ?????", break    , N     , NEMUTRAP(s->pc, R(4))); // R(4) is $a0
   INSTPAT("????????????????? ????? ????? ?????"   , inv      , N     , INV(s->pc));
