@@ -36,9 +36,9 @@ enum {
 #define src2R() do { *src2 = R(rs2); } while (0)
 #define immI() do { *imm = SEXT(BITS(i, 31, 20), 12); } while(0)
 #define immU() do { word_t temp = BITS(i, 31, 12) << 12; \
-                        *imm = SEXT(temp, 32) ;} while(0)
+                        *imm = (int32_t)SEXT(temp, 32) ;} while(0)
 #define immS() do { word_t temp = (BITS(i, 31, 25) << 5) | (BITS(i, 11, 7)); \
-                    *imm = (int32_t)SEXT(temp, 12);  \
+                    *imm = SEXT(temp, 12);  \
                   } while(0)
 #define immUJ() do { \
   word_t temp = (BITS(i, 31, 31) << 20) | (BITS(i, 19, 12) << 12)\
