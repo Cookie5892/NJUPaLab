@@ -38,7 +38,7 @@ enum {
 #define immU() do { word_t temp = BITS(i, 31, 12) << 12; \
                         *imm = SEXT(temp, 32) ;} while(0)
 #define immS() do { word_t temp = (BITS(i, 31, 25) << 5) | (BITS(i, 11, 7)); \
-                    *imm = (int32_t)SEXT(temp, 12);  \
+                    *imm = SEXT(temp, 12);  \
                   } while(0)
 #define immUJ() do { \
   word_t temp = (BITS(i, 31, 31) << 20) | (BITS(i, 19, 12) << 12)\
@@ -100,6 +100,8 @@ static int decode_exec(Decode *s) {
   INSTPAT("0000001 ????? ????? 000 ????? 0110011" , mul    , RE,R(rd) = src1 *src2);
   INSTPAT("0000001 ????? ????? 100 ????? 0110011" , divi   , RE,R(rd) = src1 / src2);
   INSTPAT("???????????????????? ????? 0110111"    , lui    , U ,R(rd) = imm);
+  INSTPAT("??????? ????? ????? 100 ????? 1100011" , blt    , B ,if(src1 < src2) s->dnpc = s->pc + imm);
+  INSTPAT("0000000 ????? ????? 010 ????? 0110011" , slt    , RE,R(rd) = (int32_t)src1 < (int32_t)src2 ? 1 : 0);
 
 
 
