@@ -5,11 +5,12 @@
 #if !defined(__ISA_NATIVE__) || defined(__NATIVE_USE_KLIB__)
 
 size_t strlen(const char *s) {
-  size_t n = 0;
-  while (*s++){
-    n++;
+  assert(s != NULL);
+  size_t count = 0;
+  while (*s++ != '\0'){
+    count++;
   }
-  return n;
+  return count;
 }
 
 char *strcpy(char *dst, const char *src) {
@@ -36,7 +37,13 @@ char *strcat(char *dst, const char *src) {
 }
 
 int strcmp(const char *s1, const char *s2) {
-  panic("Not implemented");
+  assert(s1 != NULL && s2 !=NULL);
+  while (*s1 && (*s1 == *s2)) {
+    s1++;
+    s2++;
+  }
+return *(unsigned char *)s1 - *(unsigned char *)s2;
+  
 }
 
 int strncmp(const char *s1, const char *s2, size_t n) {
