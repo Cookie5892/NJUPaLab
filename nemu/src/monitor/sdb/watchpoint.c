@@ -82,7 +82,7 @@ bool check_watchpoint(){
       printf("watchpoint %d : %s = %d---%#-8x\n", p->NO, p->exp, new_value, new_value);
       change = true;
     }
-    p++;
+    p = p->next;
   }
   return change;
   }
