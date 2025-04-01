@@ -201,8 +201,8 @@ static word_t eval(int p, int q)
   }else if (p == q){
     if(tokens[p].type == TK_REG){
       bool success = false;
-      word_t reg_vale = isa_reg_str2val(&tokens[p].str[1],&success);
-      if(success){
+      word_t reg_vale = isa_reg_str2val(&tokens[p].str[1], &success);
+      if(success) {
         return reg_vale;
       }
       printf("获取寄存器的值失败\n");
