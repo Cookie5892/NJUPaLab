@@ -73,16 +73,18 @@ void set_watchpoint(char *exp){
 
 bool check_watchpoint(){
   WP *p = head;
+  bool change = false;
   while ( p != NULL){
     word_t old_value = p->old_value;
     word_t new_value = expr(p->exp, NULL);
     if (old_value != new_value){
       p->old_value = new_value;
       printf("watchpoint %d : %s = %d---%#-8x\n", p->NO, p->exp, new_value, new_value);
-      return true;
+      change = true;
     }
+    p++;
   }
-  return false;
+  return change;
   }
 
   void list_wp(){
