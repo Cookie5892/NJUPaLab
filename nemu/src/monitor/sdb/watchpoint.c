@@ -67,7 +67,7 @@ void set_watchpoint(char *exp){
   }
   head = wp;
   wp->next = p;
-  printf("set watchpoint %d: %s = %d---%#x\n", wp->NO, exp, wp->old_value, wp->old_value);
+  printf("set watchpoint %d: %s = %d---%#-8x\n", wp->NO, exp, wp->old_value, wp->old_value);
 }
 
 
@@ -78,7 +78,7 @@ bool check_watchpoint(){
     word_t new_value = expr(p->exp, NULL);
     if (old_value != new_value){
       p->old_value = new_value;
-      printf("watchpoint %d : %s = %d---%#x\n", p->NO, p->exp, new_value, new_value);
+      printf("watchpoint %d : %s = %d---%#-8x\n", p->NO, p->exp, new_value, new_value);
       return true;
     }
   }
