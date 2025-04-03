@@ -46,7 +46,7 @@ enum {
         *imm = SEXT(temp, 21); \
       } while (0)
 #define immB() do { \
-  word_t temp = (BITS(i, 31, 31) << 12) | (BITS(i, 7, 7) << 1)  \
+  word_t temp = (BITS(i, 31, 31) << 12) | (BITS(i, 7, 7) << 11)  \
                 | (BITS(i, 30, 25) << 5) | (BITS(i, 11, 8) << 1); \
                 *imm = SEXT(temp, 13); \
 } while (0)
