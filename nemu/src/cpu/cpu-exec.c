@@ -37,7 +37,7 @@ void device_update();
 static char iringbuf_log[MAX_iringbuf_log][128] = {0};
 static int iringbuf(char *log_buf){
   static int i = 0;
-  sscanf(log_buf, "%s", iringbuf_log[i % MAX_iringbuf_log]);
+  strncpy(iringbuf_log[i % MAX_iringbuf_log], log_buf ,sizeof(iringbuf_log[0]) - 1);
   return ++i;
 }
 
