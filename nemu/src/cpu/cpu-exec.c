@@ -25,6 +25,7 @@ bool check_watchpoint();
  * You can modify this value as you want.
  */
 #define MAX_INST_TO_PRINT 10
+#define MAX_iringbuf_log 5
 
 CPU_state cpu = {};
 uint64_t g_nr_guest_inst = 0;
@@ -33,7 +34,22 @@ static bool g_print_step = false;
 
 void device_update();
 
+void disassemble(char *str, int size, uint64_t pc, uint8_t *code, int nbyte);
+static void iringbuf(char *log_buf){
+  static char iringbuf_log[MAX_iringbuf_log][128] = {0};
+  static int i = 0;
+  strncpy(iringbuf_log[i % MAX_iringbuf_log], log_buf ,sizeof(iringbuf_log[0]) - 1);
+  i++;
+  if(nemu_state.state == NEMU_ABORT){
+    int start = i >= MAX_iringbuf_log ? i % MAX_iringbuf_log : 0;
+    for(int j = 0; j < MAX_iringbuf_log; j++){
+      int indx = (start + j) % MAX_iringbuf_log;
+      printf("%s\n", iringbuf_log[indx]);
+    }
+  }
+}
 static void trace_and_difftest(Decode *_this, vaddr_t dnpc) {
+  iringbuf(_this->logbuf);
 #ifdef CONFIG_ITRACE_COND
   if (ITRACE_COND) { log_write("%s\n", _this->logbuf); }
 #endif
@@ -46,15 +62,18 @@ static void trace_and_difftest(Decode *_this, vaddr_t dnpc) {
   }
 }
 
+
+
+
 static void exec_once(Decode *s, vaddr_t pc) {
   s->pc = pc;                    //设置当前指令的地址为 pc
   s->snpc = pc;                   
   isa_exec_once(s);              //更新指令寄存器，执行指令
   cpu.pc = s->dnpc;              //更新下一次执行指令的地址
 #ifdef CONFIG_ITRACE
-  char *p = s->logbuf;
-  p += snprintf(p, sizeof(s->logbuf), FMT_WORD ":", s->pc);
-  int ilen = s->snpc - s->pc;
+  char *p = s->logbuf;    //使用 snprintf 将当前 PC 地址以规定格式（FMT_WORD）写入 logbuf，并在后面追加冒号
+  p += snprintf(p, sizeof(s->logbuf), FMT_WORD ":", s->pc); 
+  int ilen = s->snpc - s->pc;   //计算指令长度，两者之差就是当前指令的长度（字节数）
   int i;
   uint8_t *inst = (uint8_t *)&s->isa.inst;
 #ifdef CONFIG_ISA_x86
