@@ -62,7 +62,7 @@ return *(unsigned char *)s1 - *(unsigned char *)s2;
 }
 
 int strncmp(const char *s1, const char *s2, size_t n) {
-  //assert(s1 != NULL && s2 != NULL);
+  assert(s1 != NULL && s2 != NULL);
     while (n-- > 0 && *s1 && (*s1 == *s2)) {
         s1++;
         s2++;
@@ -71,7 +71,7 @@ int strncmp(const char *s1, const char *s2, size_t n) {
 }
 
 void *memset(void *s, int c, size_t n) {
-  assert(s != NULL);
+  //assert(s != NULL);
     unsigned char* pDest = (unsigned char*)s;
     c = (unsigned char)c;  // 确保c是一个无符号字符
     while (n-- > 0) {
