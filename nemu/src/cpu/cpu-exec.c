@@ -25,6 +25,7 @@ bool check_watchpoint();
  * You can modify this value as you want.
  */
 #define MAX_INST_TO_PRINT 10
+#define MAX_iringbuf_log 3
 
 CPU_state cpu = {};
 uint64_t g_nr_guest_inst = 0;
@@ -33,9 +34,18 @@ static bool g_print_step = false;
 
 void device_update();
 
+static char iringbuf_log[MAX_iringbuf_log][128] = {0};
+static int iringbuf(char *log_buf){
+  static int i = 0;
+  sscanf(log_buf, "%s", iringbuf_log[i % MAX_iringbuf_log]);
+  return ++i;
+}
+
 static void trace_and_difftest(Decode *_this, vaddr_t dnpc) {
 #ifdef CONFIG_ITRACE_COND
-  if (ITRACE_COND) { log_write("      %s\n", _this->logbuf); }
+  if (ITRACE_COND) { int cur_i = iringbuf(_this->logbuf);\
+                    for(int i = 0 ; i < (cur_i < MAX_iringbuf_log ? cur_i : MAX_iringbuf_log); i++)\
+                    log_write("        %s\n", iringbuf_log[i]); }
 #endif
   if (g_print_step) { IFDEF(CONFIG_ITRACE, puts(_this->logbuf)); }
   IFDEF(CONFIG_DIFFTEST, difftest_step(_this->pc, dnpc));
