@@ -71,7 +71,7 @@ int strncmp(const char *s1, const char *s2, size_t n) {
 }
 
 void *memset(void *s, int c, size_t n) {
-  //assert(s != NULL);
+  assert(s != NULL);
     unsigned char* pDest = (unsigned char*)s;
     c = (unsigned char)c;  // 确保c是一个无符号字符
     while (n-- > 0) {
