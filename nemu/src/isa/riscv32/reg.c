@@ -22,13 +22,15 @@ const char *regs[] = {
     "a6", "a7", "s2", "s3", "s4", "s5", "s6", "s7",
     "s8", "s9", "s10", "s11", "t3", "t4", "t5", "t6"};
 
-void isa_reg_display()
-{
-  int nr_regs = sizeof(regs) / sizeof(regs[0]);
-  for (int i = 0; i < nr_regs; i++){
-    printf("%s------%d-------0x%x\n", regs[i], cpu.gpr[i], cpu.gpr[i]);
+  void isa_reg_display() {
+    int nr_regs = sizeof(regs) / sizeof(regs[0]);
+    // 输出标题行，注意各字段的宽度可以根据需要调整
+    printf("%-4s   %-12s   %-12s\n", "Reg", "Decimal", "Hexadecimal");
+    for (int i = 0; i < nr_regs; i++) {
+      // "%-4s" 左对齐寄存器名称（宽度为4），"%12d" 右对齐的10进制数，"0x%08x" 输出8位16进制数
+      printf("%-4s : %12d   0x%08x\n", regs[i], cpu.gpr[i], cpu.gpr[i]);
+    }
   }
-}
 
 //获取寄存器的值
 word_t isa_reg_str2val(const char *s, bool *success)
