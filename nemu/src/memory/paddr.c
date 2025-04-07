@@ -61,7 +61,7 @@ word_t paddr_read(paddr_t addr, int len) {
     out_of_bound(addr);
   }
 
-  printf("Memory read: addr = "FMT_PADDR", len = %d, data = 0x%08x\n", addr, len, add_ret);
+  printf("Memory read : addr = "FMT_PADDR", len = %d, data = 0x%08x\n", addr, len, add_ret);
   return add_ret;
 }
 
