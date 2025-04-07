@@ -21,6 +21,8 @@
 #define R(i) gpr(i)
 #define Mr vaddr_read
 #define Mw vaddr_write
+void disassemble(char *str, int size, uint64_t pc, uint8_t *code, int nbyte);
+static void iringbuf(Decode *s);
 
 enum {
   TYPE_I, TYPE_U, TYPE_S,
@@ -128,5 +130,41 @@ static int decode_exec(Decode *s) {
 
 int isa_exec_once(Decode *s) {
   s->isa.inst = inst_fetch(&s->snpc, 4);    //根据物理地址获取指定长度内存中的指令，返回指令值
+  iringbuf(s);
   return decode_exec(s);
+}
+
+#define MAX_iringbuf_log 5
+static char iringbuf_log[MAX_iringbuf_log][128] = {0};
+static int i = 0;
+static void iringbuf(Decode *s){
+  char *p = s->logbuf;    //使用 snprintf 将当前 PC 地址以规定格式（FMT_WORD）写入 logbuf，并在后面追加冒号
+  p += snprintf(p, sizeof(s->logbuf), FMT_WORD ":", s->pc); 
+  int ilen = s->snpc - s->pc;   //计算指令长度，两者之差就是当前指令的长度（字节数）
+  int i;
+  uint8_t *inst = (uint8_t *)&s->isa.inst;
+  for (i = ilen - 1; i >= 0; i --) {
+    p += snprintf(p, 4, " %02x", inst[i]);
+  }
+  int ilen_max = MUXDEF(CONFIG_ISA_x86, 8, 4);
+  int space_len = ilen_max - ilen;
+  if (space_len < 0) space_len = 0;
+  space_len = space_len * 3 + 1;
+  memset(p, ' ', space_len);
+  p += space_len;
+  disassemble(p, s->logbuf + sizeof(s->logbuf) - p,
+      MUXDEF(CONFIG_ISA_x86, s->snpc, s->pc), (uint8_t *)&s->isa.inst, ilen);
+
+      //将当前指令信息写入iringbuf中
+      strncpy(iringbuf_log[i % MAX_iringbuf_log], s->logbuf ,sizeof(iringbuf_log[0]) - 1);
+  i++;
+}
+
+//打印iringbuf
+void iringbuf_prin(){
+  int start = i >= MAX_iringbuf_log ? i % MAX_iringbuf_log : 0;
+    for(int j = 0; j < MAX_iringbuf_log; j++){
+      int indx = (start + j) % MAX_iringbuf_log;
+      printf("%s\n", iringbuf_log[indx]);
+    }
 }

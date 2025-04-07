@@ -18,6 +18,7 @@
 #include <cpu/difftest.h>
 #include <locale.h>
 bool check_watchpoint();
+void iringbuf_prin();
 
 /* The assembly code of instructions executed is only output to the screen
  * when the number of instructions executed is less than this value.
@@ -25,7 +26,7 @@ bool check_watchpoint();
  * You can modify this value as you want.
  */
 #define MAX_INST_TO_PRINT 10
-#define MAX_iringbuf_log 5
+
 
 CPU_state cpu = {};
 uint64_t g_nr_guest_inst = 0;
@@ -34,19 +35,8 @@ static bool g_print_step = false;
 
 void device_update();
 
-static char iringbuf_log[MAX_iringbuf_log][128] = {0};
-static int i = 0;
-static void iringbuf(){
-    int start = i >= MAX_iringbuf_log ? i % MAX_iringbuf_log : 0;
-    for(int j = 0; j < MAX_iringbuf_log; j++){
-      int indx = (start + j) % MAX_iringbuf_log;
-      printf("%s\n", iringbuf_log[indx]);
-    }
-}
 
 static void trace_and_difftest(Decode *_this, vaddr_t dnpc) {
-  strncpy(iringbuf_log[i % MAX_iringbuf_log], _this->logbuf ,sizeof(iringbuf_log[0]) - 1);
-  i++;
 #ifdef CONFIG_ITRACE_COND
   if (ITRACE_COND) { log_write("%s\n", _this->logbuf); }
 #endif
@@ -116,7 +106,7 @@ static void statistic() {
 void assert_fail_msg() {
   isa_reg_display();
   statistic();
-  iringbuf();
+  iringbuf_prin();
   
 }
 
