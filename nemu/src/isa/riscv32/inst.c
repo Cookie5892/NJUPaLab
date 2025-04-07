@@ -134,7 +134,7 @@ int isa_exec_once(Decode *s) {
   return decode_exec(s);
 }
 
-#define MAX_iringbuf_log 15
+#define MAX_iringbuf_log 9
 static char iringbuf_log[MAX_iringbuf_log][128] = {0};
 static int i = 0;
 static void iringbuf(Decode *s) {
