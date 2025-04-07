@@ -55,13 +55,13 @@ word_t paddr_read(paddr_t addr, int len) {
   if (likely(in_pmem(addr))) {
     add_ret = pmem_read(addr, len);
   }else {
-    IFDEF(CONFIG_DEVICE, add_ret = mmio_read(addr, len));
+    IFDEF(CONFIG_DEVICE, add_ret = mmio_read(addr, len)); 
   }
-  if (!in_pmem(addr)) {
+  printf("Memory read : addr = "FMT_PADDR", len = %d, data = 0x%08x\n", addr, len, add_ret);
+
+  if (!in_pmem(addr) && add_ret != 0) {
     out_of_bound(addr);
   }
-
-  printf("Memory read : addr = "FMT_PADDR", len = %d, data = 0x%08x\n", addr, len, add_ret);
   return add_ret;
 }
 
