@@ -137,14 +137,14 @@ int isa_exec_once(Decode *s) {
 #define MAX_iringbuf_log 5
 static char iringbuf_log[MAX_iringbuf_log][128] = {0};
 static int i = 0;
-static void iringbuf(Decode *s){
-  char *p = s->logbuf;    //使用 snprintf 将当前 PC 地址以规定格式（FMT_WORD）写入 logbuf，并在后面追加冒号
+static void iringbuf(Decode *s) {
+  char *p = s->logbuf;
   p += snprintf(p, sizeof(s->logbuf), FMT_WORD ":", s->pc); 
-  int ilen = s->snpc - s->pc;   //计算指令长度，两者之差就是当前指令的长度（字节数）
-  int i;
+  int ilen = s->snpc - s->pc;
+  int j;
   uint8_t *inst = (uint8_t *)&s->isa.inst;
-  for (i = ilen - 1; i >= 0; i --) {
-    p += snprintf(p, 4, " %02x", inst[i]);
+  for (j = ilen - 1; j >= 0; j--) {
+    p += snprintf(p, 4, " %02x", inst[j]);
   }
   int ilen_max = MUXDEF(CONFIG_ISA_x86, 8, 4);
   int space_len = ilen_max - ilen;
@@ -155,8 +155,9 @@ static void iringbuf(Decode *s){
   disassemble(p, s->logbuf + sizeof(s->logbuf) - p,
       MUXDEF(CONFIG_ISA_x86, s->snpc, s->pc), (uint8_t *)&s->isa.inst, ilen);
 
-      //将当前指令信息写入iringbuf中
-      strncpy(iringbuf_log[i % MAX_iringbuf_log], s->logbuf ,sizeof(iringbuf_log[0]) - 1);
+  // 将当前指令信息写入 iringbuf 中
+  strncpy(iringbuf_log[i % MAX_iringbuf_log], s->logbuf, sizeof(iringbuf_log[0]) - 1);
+  iringbuf_log[i % MAX_iringbuf_log][sizeof(iringbuf_log[0]) - 1] = '\0'; // 确保字符串终止
   i++;
 }
 
