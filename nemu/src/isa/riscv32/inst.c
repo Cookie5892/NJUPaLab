@@ -163,7 +163,7 @@ static void iringbuf(Decode *s) {
 
 //打印iringbuf
 void iringbuf_prin(){
-  int num_log = i >= MAX_iringbuf_log ? i % MAX_iringbuf_log : i ;
+  int num_log = i >= MAX_iringbuf_log ? MAX_iringbuf_log : i ;
     for(int j = 0; j < num_log; j++){
       if( j == (i-1) % MAX_iringbuf_log){
         printf("------->%s\n", iringbuf_log[j]);
