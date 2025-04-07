@@ -51,10 +51,18 @@ void init_mem() {
 }
 
 word_t paddr_read(paddr_t addr, int len) {
-  if (likely(in_pmem(addr))) return pmem_read(addr, len);
-  IFDEF(CONFIG_DEVICE, return mmio_read(addr, len));
-  out_of_bound(addr);
-  return 0;
+  word_t add_ret = 0;
+  if (likely(in_pmem(addr))) {
+    add_ret = pmem_read(addr, len);
+  }else {
+    IFDEF(CONFIG_DEVICE, add_ret = mmio_read(addr, len));
+  }
+  if (!in_pmem(addr)) {
+    out_of_bound(addr);
+  }
+
+  printf("Memory read: addr = "FMT_PADDR", len = %d, data = 0x%08x", addr, len, add_ret);
+  return add_ret;
 }
 
 void paddr_write(paddr_t addr, int len, word_t data) {
