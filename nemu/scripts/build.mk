@@ -29,7 +29,7 @@ OBJS = $(SRCS:%.c=$(OBJ_DIR)/%.o) $(CXXSRC:%.cc=$(OBJ_DIR)/%.o)
 
 $(OBJ_DIR)/%.i:%.c
 	@mkdir -p $(dir $@)
-	$(CC) -02 $(INCLUDES) -E -o $@ $<
+	$(CC) -O2 $(INCLUDES) -E -o $@ $<
 
 # Compilation patterns
 $(OBJ_DIR)/%.o: %.c
