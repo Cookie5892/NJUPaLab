@@ -49,9 +49,22 @@ $(OBJ_DIR)/%.o: %.cc
 
 # Some convenient rules
 
-.PHONY: app clean preprocess
+.PHONY: app clean preprocess preprocess-file
 
 preprocess: $(OBJS:.o=.i)
+
+
+
+
+# $(dir ...)提取路径部分，确保只创建目录，而不是文件本身。
+preprocess-file:
+	@if [ -z "$(SRC)" ]; then \
+        echo "Error: $(COLOR_RED)Please specify the source file using 'make preprocess-file SRC=<source_file>'$(COLOR_END)"; \
+        exit 1; \
+    fi
+	@mkdir -p $(dir $(OBJ_DIR)/$(SRC:.c=.i))
+	$(CC) -O2 $(INCLUDES) -E -o $(OBJ_DIR)/$(SRC:.c=.i) $(SRC)
+	@echo "Preprocessed file generated: $(OBJ_DIR)/$(SRC:.c=.i)"
 
 app: $(BINARY)
 
