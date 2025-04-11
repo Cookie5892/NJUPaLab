@@ -27,6 +27,10 @@ LDFLAGS := -O2 $(LDFLAGS)
 
 OBJS = $(SRCS:%.c=$(OBJ_DIR)/%.o) $(CXXSRC:%.cc=$(OBJ_DIR)/%.o)
 
+$(OBJ_DIR)/%.i:%.c
+	@mkdir -p $(dir $@)
+	$(CC) -02 $(INCLUDES) -E -o $@ $<
+
 # Compilation patterns
 $(OBJ_DIR)/%.o: %.c
 	@echo + CC $<
@@ -45,7 +49,9 @@ $(OBJ_DIR)/%.o: %.cc
 
 # Some convenient rules
 
-.PHONY: app clean
+.PHONY: app clean preprocess
+
+preprocess: $(OBJS:.o=.i)
 
 app: $(BINARY)
 
