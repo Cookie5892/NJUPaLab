@@ -46,6 +46,16 @@ static char *diff_so_file = NULL;
 static char *img_file = NULL;
 static int difftest_port = 1234;
 
+typedef struct {
+  Elf32_Ehdr *ehdr;
+  Elf32_Shdr *shdr_table;
+  char *shstrtab;       //strtab文件结构是字符串拼形成的字符数组，不是字符指针数组
+  Elf32_Sym *symtab;
+  int symtab_Nmu;
+
+}ElfFile;
+static ElfFile *elf_file; 
+
 static long load_img() {
   if (img_file == NULL) {
     Log("No image is given. Use the default build-in image.");
@@ -68,6 +78,71 @@ static long load_img() {
   return size;
 }
 
+static void read_elf( const char *elfname){
+  if (elfname == NULL){
+    Log("Unable to open elf file.");
+    return;
+  }
+
+  FILE *fp = fopen(elfname, "rb");
+  Assert(fp, "Can not open '%s'", elfname);
+
+  fseek(fp, 0, SEEK_END);
+  long size = ftell(fp);
+  Log("The elf is %s, size = %ld", elfname, size);
+
+  fseek(fp, 40, SEEK_SET);
+//从elf头读取elf头的大小
+  uint16_t *e_ehsize = malloc(sizeof(uint16_t));
+  fread(e_ehsize, sizeof(uint16_t), 1, fp);
+
+
+  fseek(fp, 0, SEEK_SET);
+//为elf头分配内存可可空间
+elf_file->ehdr = malloc(sizeof(Elf32_Ehdr));
+fread(elf_file->ehdr, sizeof(Elf32_Ehdr), 1, fp);
+Assert(elf_file->ehdr, "elf头文件读取失败");
+Log("从elf头读取elf头的大小: %d--->%d", *e_ehsize, sizeof(Elf32_Ehdr));
+free(e_ehsize);
+
+
+fseek(fp, elf_file->ehdr->e_shoff, SEEK_SET);
+//为节头分配内存空间
+elf_file->shdr_table = malloc(elf_file->ehdr->e_shentsize * elf_file->ehdr->e_shnum);
+fread(elf_file->shdr_table, elf_file->ehdr->e_shentsize * elf_file->ehdr->e_shnum, 1, fp);
+Assert(elf_file->shdr_table, "elf节头读取失败");
+
+fseek(fp, elf_file->shdr_table[elf_file->ehdr->e_shstrndx].sh_offset, SEEK_SET);
+//为strtab分配内存空间,strtab是字符串数组
+elf_file->shstrtab = malloc(elf_file->shdr_table[elf_file->ehdr->e_shstrndx].sh_size);
+fread(elf_file->shstrtab, elf_file->shdr_table[elf_file->ehdr->e_shstrndx].sh_size, 1, fp);
+
+//为symtab分配内存可空间
+for (int i = 0; i < elf_file->ehdr->e_shnum; i++){
+  if ( elf_file->shdr_table[i].st_info == SHT_SYMTAB ){
+      fseek(fp, elf_file->shdr_table[i].sh_offset, SEEK_SET);
+      elf_file->symtab = malloc(elf_file->shdr_table[i].sh_size);
+      fread(elf_file->symtab, elf_file->shdr_table[i].sh_size, 1, fp);
+      elf_file->symtab_Nmu = elf_file->shdr_table[i].sh_size / sizeof(Elf32_Sym);
+      break;
+  }
+}
+fclose(fp);
+}
+
+//ftrace
+static char *ftrace(vaddr_t pc){
+
+  for (int i = 0; i < elf_file->symtab_Nmu; i++){
+    if (elf_file->symtab[i].st_info == STT_FUNC ){
+      if (pc >= elf_file->symtab[i].st_value && pc < (elf_file->symtab[i].st_value + elf_file->symtab[i].st_size))
+      return &elf_file->shstrtab[elf_file->symtab[i].st_name];//返回字符串的起始地址，
+    }
+  }
+  return "???";
+}
+
+
 static int parse_args(int argc, char *argv[]) {
   const struct option table[] = {
     {"batch"    , no_argument      , NULL, 'b'},
@@ -75,15 +150,17 @@ static int parse_args(int argc, char *argv[]) {
     {"diff"     , required_argument, NULL, 'd'},
     {"port"     , required_argument, NULL, 'p'},
     {"help"     , no_argument      , NULL, 'h'},
+    {"elf"      , required_argument, NULL, 'e'},
     {0          , 0                , NULL,  0 },
   };
   int o;
-  while ( (o = getopt_long(argc, argv, "-bhl:d:p:", table, NULL)) != -1) {
+  while ( (o = getopt_long(argc, argv, "-bhl:d:p:e:", table, NULL)) != -1) {
     switch (o) {
       case 'b': sdb_set_batch_mode(); break;
       case 'p': sscanf(optarg, "%d", &difftest_port); break;
       case 'l': log_file = optarg; break;
       case 'd': diff_so_file = optarg; break;
+      case 'e': read_elf(optarg); break;
       case 1: img_file = optarg; return 0;
       default:
         printf("Usage: %s [OPTION...] IMAGE [args]\n\n", argv[0]);
@@ -91,6 +168,7 @@ static int parse_args(int argc, char *argv[]) {
         printf("\t-l,--log=FILE           output log to FILE\n");
         printf("\t-d,--diff=REF_SO        run DiffTest with reference REF_SO\n");
         printf("\t-p,--port=PORT          run DiffTest with port PORT\n");
+        printf("\t-e,--elf                read elf file\n");
         printf("\n");
         exit(0);
     }

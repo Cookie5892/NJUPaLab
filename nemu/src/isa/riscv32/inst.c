@@ -23,6 +23,7 @@
 #define Mw vaddr_write
 void disassemble(char *str, int size, uint64_t pc, uint8_t *code, int nbyte);
 static void iringbuf(Decode *s);
+static char *ftrace(vaddr_t pc);
 
 enum {
   TYPE_I, TYPE_U, TYPE_S,
@@ -131,8 +132,15 @@ static int decode_exec(Decode *s) {
 int isa_exec_once(Decode *s) {
   s->isa.inst = inst_fetch(&s->snpc, 4);    //根据物理地址获取指定长度内存中的指令，返回指令值
   iringbuf(s);
+  print_ftrace(s->pc);
   return decode_exec(s);
 }
+
+static void print_ftrace(vaddr_t pc){
+char *fun_name = ftrace(pc);
+
+}
+
 
 #define MAX_iringbuf_log 16
 static char iringbuf_log[MAX_iringbuf_log][128] = {0};
