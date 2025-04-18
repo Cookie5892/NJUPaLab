@@ -23,7 +23,8 @@
 #define Mw vaddr_write
 void disassemble(char *str, int size, uint64_t pc, uint8_t *code, int nbyte);
 static void iringbuf(Decode *s);
-static char *ftrace(vaddr_t pc);
+char *ftrace(vaddr_t pc);
+static void print_ftrace(Decode *s, bool c_or_r);
 
 enum {
   TYPE_I, TYPE_U, TYPE_S,
@@ -89,8 +90,8 @@ static int decode_exec(Decode *s) {
   INSTPAT("??????? ????? ????? 000 ????? 01000 11", sb     , S, Mw(src1 + imm, 1, src2));
 
   INSTPAT("???????????? ????? 000 ????? 0010011"  , addi   , I, R(rd) = src1 + imm);
-  INSTPAT("???????????????????? ????? 1101111"    , jal    , UJ,R(rd) = s->pc + 4; s->dnpc = s->pc + imm);
-  INSTPAT("???????????? ????? 000 ????? 1100111"  , jalr   , I ,s->dnpc = (src1 + imm) &~ 1; if(rd != 0) R(rd) = s->pc + 4);
+  INSTPAT("???????????????????? ????? 1101111"    , jal    , UJ,R(rd) = s->pc + 4; s->dnpc = s->pc + imm; print_ftrace(s, true));
+  INSTPAT("???????????? ????? 000 ????? 1100111"  , jalr   , I ,s->dnpc = (src1 + imm) & ~ 1; if(rd != 0) R(rd) = s->pc + 4; if (rd == 0) print_ftrace(s, false); if (rd == 1) print_ftrace(s, true));
   INSTPAT("??????? ????? ????? 010 ????? 0100011" , sw     , S ,Mw(src1 + imm, 4, src2));
   INSTPAT("??????? ????? ????? 000 ????? 1100011" , beq    , B ,if(src1 == src2 ) s->dnpc = s->pc + imm);
   INSTPAT("??????? ????? ????? 010 ????? 0000011" , lw     , I ,R(rd) = Mr(src1 + imm, 4));
@@ -132,13 +133,24 @@ static int decode_exec(Decode *s) {
 int isa_exec_once(Decode *s) {
   s->isa.inst = inst_fetch(&s->snpc, 4);    //根据物理地址获取指定长度内存中的指令，返回指令值
   iringbuf(s);
-  print_ftrace(s->pc);
   return decode_exec(s);
 }
 
-static void print_ftrace(vaddr_t pc){
-char *fun_name = ftrace(pc);
+static void print_ftrace(Decode *s, bool c_or_r){
+  char * fun_name = ftrace(s->dnpc);
+  static int space_num = 1;
+  printf("0x%08x:", s->pc);
+  for( int i = 0; i < space_num; i ++){
+    putchar(' ');
+  } 
 
+  if (c_or_r){
+    printf("call [%s@0x%08x]\n", fun_name, s->dnpc);
+    space_num += 2;
+  }else {
+    printf("ret [%s]\n", fun_name);
+    space_num = (space_num >= 2) ? space_num -2 : 0 ;
+  }
 }
 
 

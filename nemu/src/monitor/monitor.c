@@ -15,6 +15,7 @@
 
 #include <isa.h>
 #include <memory/paddr.h>
+#include <elf.h>
 
 void init_rand();
 void init_log(const char *log_file);
@@ -94,35 +95,38 @@ static void read_elf( const char *elfname){
   fseek(fp, 40, SEEK_SET);
 //从elf头读取elf头的大小
   uint16_t *e_ehsize = malloc(sizeof(uint16_t));
-  fread(e_ehsize, sizeof(uint16_t), 1, fp);
+  int ret1 = fread(e_ehsize, sizeof(uint16_t), 1, fp);
+  assert(ret1 == 1);
 
 
   fseek(fp, 0, SEEK_SET);
 //为elf头分配内存可可空间
 elf_file->ehdr = malloc(sizeof(Elf32_Ehdr));
-fread(elf_file->ehdr, sizeof(Elf32_Ehdr), 1, fp);
-Assert(elf_file->ehdr, "elf头文件读取失败");
-Log("从elf头读取elf头的大小: %d--->%d", *e_ehsize, sizeof(Elf32_Ehdr));
+int ret = fread(elf_file->ehdr, sizeof(Elf32_Ehdr), 1, fp);
+assert(ret == 1);
+Log("从elf头读取elf头的大小: %hu--->%zu", *e_ehsize, sizeof(Elf32_Ehdr));
 free(e_ehsize);
 
 
 fseek(fp, elf_file->ehdr->e_shoff, SEEK_SET);
 //为节头分配内存空间
 elf_file->shdr_table = malloc(elf_file->ehdr->e_shentsize * elf_file->ehdr->e_shnum);
-fread(elf_file->shdr_table, elf_file->ehdr->e_shentsize * elf_file->ehdr->e_shnum, 1, fp);
-Assert(elf_file->shdr_table, "elf节头读取失败");
+int ret2 = fread(elf_file->shdr_table, elf_file->ehdr->e_shentsize * elf_file->ehdr->e_shnum, 1, fp);
+assert(ret2 == 1);
 
 fseek(fp, elf_file->shdr_table[elf_file->ehdr->e_shstrndx].sh_offset, SEEK_SET);
 //为strtab分配内存空间,strtab是字符串数组
 elf_file->shstrtab = malloc(elf_file->shdr_table[elf_file->ehdr->e_shstrndx].sh_size);
-fread(elf_file->shstrtab, elf_file->shdr_table[elf_file->ehdr->e_shstrndx].sh_size, 1, fp);
+int ret3 = fread(elf_file->shstrtab, elf_file->shdr_table[elf_file->ehdr->e_shstrndx].sh_size, 1, fp);
+assert(ret3 == 1);
 
 //为symtab分配内存可空间
 for (int i = 0; i < elf_file->ehdr->e_shnum; i++){
-  if ( elf_file->shdr_table[i].st_info == SHT_SYMTAB ){
+  if ( elf_file->shdr_table[i].sh_type == SHT_SYMTAB ){
       fseek(fp, elf_file->shdr_table[i].sh_offset, SEEK_SET);
       elf_file->symtab = malloc(elf_file->shdr_table[i].sh_size);
-      fread(elf_file->symtab, elf_file->shdr_table[i].sh_size, 1, fp);
+      int ret4 = fread(elf_file->symtab, elf_file->shdr_table[i].sh_size, 1, fp);
+      assert(ret4 == 1);
       elf_file->symtab_Nmu = elf_file->shdr_table[i].sh_size / sizeof(Elf32_Sym);
       break;
   }
@@ -131,7 +135,7 @@ fclose(fp);
 }
 
 //ftrace
-static char *ftrace(vaddr_t pc){
+char *ftrace(vaddr_t pc){
 
   for (int i = 0; i < elf_file->symtab_Nmu; i++){
     if (elf_file->symtab[i].st_info == STT_FUNC ){
