@@ -91,7 +91,7 @@ static const char *get_symbol_vis(uint8_t vis) {
 
 // 打印符号表
 void print_symbol_table() {
-  printf("   Num:    Value  Size Type    Bind   Vis      Ndx Name\n");
+  printf("   Num:    Value  Size Type    Bind   Vis      Ndx  Name\n");
   for (int i = 0; i < elf_file->symtab_Nmu; i++) {
     Elf32_Sym *sym = &elf_file->symtab[i];
     const char *type = get_symbol_type(ELF32_ST_TYPE(sym->st_info));
@@ -100,7 +100,7 @@ void print_symbol_table() {
     const char *name = &elf_file->shstrtab[sym->st_name];
 
     // 打印符号表的每一行
-    printf("%5d: %08x %5u %-7s %-6s %-8s %4d %s\n",
+    printf("%5d: %08x %5u %-7s %-6s %-8s %4d  %s\n",
           i, sym->st_value, sym->st_size, type, bind, vis, sym->st_shndx, name);
   }
 }
