@@ -91,7 +91,7 @@ static const char *get_symbol_vis(uint8_t vis) {
 
 // 打印符号表
 void print_symbol_table() {
-  printf("Num:    Value  Size Type    Bind   Vis      Ndx Name\n");
+  printf("   Num:    Value  Size Type    Bind   Vis      Ndx Name\n");
   for (int i = 0; i < elf_file->symtab_Nmu; i++) {
     Elf32_Sym *sym = &elf_file->symtab[i];
     const char *type = get_symbol_type(ELF32_ST_TYPE(sym->st_info));
