@@ -136,11 +136,17 @@ for (int i = 0; i < elf_file->ehdr->e_shnum; i++){
   }
 }
 fclose(fp);
+
+Log("symtab_Nmu: %d", elf_file->symtab_Nmu);
+for (int i = 0; i < elf_file->symtab_Nmu; i++) {
+  Log("Symbol %d: st_name=%u, st_value=0x%x, st_size=%u, st_info=%u",
+      i, elf_file->symtab[i].st_name, elf_file->symtab[i].st_value,
+      elf_file->symtab[i].st_size, elf_file->symtab[i].st_info);
+}
 }
 
 //ftrace
 char *ftrace(vaddr_t pc){
-
   for (int i = 0; i < elf_file->symtab_Nmu; i++){
     if (elf_file->symtab[i].st_info == STT_FUNC ){
       if (pc >= elf_file->symtab[i].st_value && pc < (elf_file->symtab[i].st_value + elf_file->symtab[i].st_size))
