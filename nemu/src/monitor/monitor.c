@@ -55,7 +55,7 @@ typedef struct {
   int symtab_Nmu;
 
 }ElfFile;
-static ElfFile *elf_file; 
+static ElfFile *elf_file;
 
 static long load_img() {
   if (img_file == NULL) {
@@ -85,6 +85,10 @@ static void read_elf( const char *elfname){
     return;
   }
 
+  if (elf_file == NULL) {
+    elf_file = malloc(sizeof(ElfFile));
+    assert(elf_file != NULL);
+  }
   FILE *fp = fopen(elfname, "rb");
   Assert(fp, "Can not open elf '%s'", elfname);
 
