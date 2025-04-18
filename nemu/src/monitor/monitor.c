@@ -86,7 +86,7 @@ static void read_elf( const char *elfname){
   }
 
   FILE *fp = fopen(elfname, "rb");
-  Assert(fp, "Can not open '%s'", elfname);
+  Assert(fp, "Can not open rlf '%s'", elfname);
 
   fseek(fp, 0, SEEK_END);
   long size = ftell(fp);
