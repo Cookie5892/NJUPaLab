@@ -84,7 +84,10 @@ static void read_elf( const char *elfname){
     Log("Unable to open elf file.");
     return;
   }
-
+  if (elf_file == NULL) {
+    elf_file = malloc(sizeof(ElfFile));
+    assert(elf_file != NULL);
+  }
 
   FILE *fp = fopen(elfname, "rb");
   Assert(fp, "Can not open elf '%s'", elfname);
