@@ -89,6 +89,13 @@ static const char *get_symbol_vis(uint8_t vis) {
   }
 }
 
+static const char *get_symbol_ndx(Elf32_Section ndx){
+  switch(ndx){
+    case SHN_UNDEF:   return "UND";
+    case SHN_ABS  :   return "ABS";
+    default: char *str = NULL; sprintf(str, "%d", ndx);   return str ;
+  }
+}
 // 打印符号表
 void print_symbol_table() {
   printf("   Num:    Value  Size Type    Bind   Vis      Ndx  Name\n");
@@ -97,11 +104,12 @@ void print_symbol_table() {
     const char *type = get_symbol_type(ELF32_ST_TYPE(sym->st_info));
     const char *bind = get_symbol_bind(ELF32_ST_BIND(sym->st_info));
     const char *vis = get_symbol_vis(sym->st_other);
+    const char *ndx = get_symbol_ndx(sym->st_shndx);
     const char *name = &elf_file->shstrtab[sym->st_name];
 
     // 打印符号表的每一行
-    printf("%5d: %08x %5u %-7s %-6s %-8s %4d  %s\n",
-          i, sym->st_value, sym->st_size, type, bind, vis, sym->st_shndx, name);
+    printf("%5d: %08x %5u %-7s %-6s %-8s %-4s  %s\n",
+          i, sym->st_value, sym->st_size, type, bind, vis, ndx, name);
   }
 }
 
