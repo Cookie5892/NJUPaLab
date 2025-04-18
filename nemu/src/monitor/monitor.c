@@ -93,7 +93,7 @@ static const char *get_symbol_ndx(Elf32_Section ndx){
   switch(ndx){
     case SHN_UNDEF:   return "UND";
     case SHN_ABS  :   return "ABS";
-    default: char *str = NULL; sprintf(str, "%d", ndx);   return str ;
+    default: {static char str[16]; sprintf(str, "%d", ndx);   return str ;}
   }
 }
 // 打印符号表
