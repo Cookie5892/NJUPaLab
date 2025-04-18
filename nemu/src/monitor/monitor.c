@@ -108,7 +108,7 @@ static void read_elf( const char *elfname){
 elf_file->ehdr = malloc(sizeof(Elf32_Ehdr));
 int ret = fread(elf_file->ehdr, sizeof(Elf32_Ehdr), 1, fp);
 assert(ret == 1);
-Log("从elf头读取elf头的大小: %hu--->%zu", *e_ehsize, sizeof(Elf32_Ehdr));
+printf("从elf头读取elf头的大小: %hu--->%zu", *e_ehsize, sizeof(Elf32_Ehdr));
 free(e_ehsize);
 
 
@@ -136,14 +136,57 @@ for (int i = 0; i < elf_file->ehdr->e_shnum; i++){
   }
 }
 fclose(fp);
+}
 
-Log("symtab_Nmu: %d", elf_file->symtab_Nmu);
-for (int i = 0; i < elf_file->symtab_Nmu; i++) {
-  Log("Symbol %d: st_name=%u, st_value=0x%x, st_size=%u, st_info=%u",
-      i, elf_file->symtab[i].st_name, elf_file->symtab[i].st_value,
-      elf_file->symtab[i].st_size, elf_file->symtab[i].st_info);
+// 获取符号类型的字符串表示
+static const char *get_symbol_type(uint8_t type) {
+  switch (type) {
+    case STT_NOTYPE: return "NOTYPE";
+    case STT_OBJECT: return "OBJECT";
+    case STT_FUNC:   return "FUNC";
+    case STT_SECTION:return "SECTION";
+    case STT_FILE:   return "FILE";
+    default:         return "UNKNOWN";
+  }
 }
+
+// 获取符号绑定的字符串表示
+static const char *get_symbol_bind(uint8_t bind) {
+  switch (bind) {
+    case STB_LOCAL:  return "LOCAL";
+    case STB_GLOBAL: return "GLOBAL";
+    case STB_WEAK:   return "WEAK";
+    default:         return "UNKNOWN";
+  }
 }
+
+// 获取符号可见性的字符串表示
+static const char *get_symbol_vis(uint8_t vis) {
+  switch (vis) {
+    case STV_DEFAULT:   return "DEFAULT";
+    case STV_INTERNAL:  return "INTERNAL";
+    case STV_HIDDEN:    return "HIDDEN";
+    case STV_PROTECTED: return "PROTECTED";
+    default:            return "UNKNOWN";
+  }
+}
+
+// 打印符号表
+void print_symbol_table() {
+  printf("Num:    Value  Size Type    Bind   Vis      Ndx Name\n");
+  for (int i = 0; i < elf_file->symtab_Nmu; i++) {
+    Elf32_Sym *sym = &elf_file->symtab[i];
+    const char *type = get_symbol_type(ELF32_ST_TYPE(sym->st_info));
+    const char *bind = get_symbol_bind(ELF32_ST_BIND(sym->st_info));
+    const char *vis = get_symbol_vis(sym->st_other);
+    const char *name = &elf_file->shstrtab[sym->st_name];
+
+    // 打印符号表的每一行
+    printf("%5d: %08x %5u %-7s %-6s %-8s %4d %s\n",
+          i, sym->st_value, sym->st_size, type, bind, vis, sym->st_shndx, name);
+  }
+}
+
 
 //ftrace
 char *ftrace(vaddr_t pc){
