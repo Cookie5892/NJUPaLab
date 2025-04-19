@@ -56,62 +56,6 @@ typedef struct {
 
 }ElfFile;
 static ElfFile *elf_file;
-// 获取符号类型的字符串表示
-static const char *get_symbol_type(uint8_t type) {
-  switch (type) {
-    case STT_NOTYPE: return "NOTYPE";
-    case STT_OBJECT: return "OBJECT";
-    case STT_FUNC:   return "FUNC";
-    case STT_SECTION:return "SECTION";
-    case STT_FILE:   return "FILE";
-    default:         return "UNKNOWN";
-  }
-}
-
-// 获取符号绑定的字符串表示
-static const char *get_symbol_bind(uint8_t bind) {
-  switch (bind) {
-    case STB_LOCAL:  return "LOCAL";
-    case STB_GLOBAL: return "GLOBAL";
-    case STB_WEAK:   return "WEAK";
-    default:         return "UNKNOWN";
-  }
-}
-
-// 获取符号可见性的字符串表示
-static const char *get_symbol_vis(uint8_t vis) {
-  switch (vis) {
-    case STV_DEFAULT:   return "DEFAULT";
-    case STV_INTERNAL:  return "INTERNAL";
-    case STV_HIDDEN:    return "HIDDEN";
-    case STV_PROTECTED: return "PROTECTED";
-    default:            return "UNKNOWN";
-  }
-}
-
-static const char *get_symbol_ndx(Elf32_Section ndx){
-  switch(ndx){
-    case SHN_UNDEF:   return "UND";
-    case SHN_ABS  :   return "ABS";
-    default: {static char str[16]; sprintf(str, "%d", ndx);   return str ;}
-  }
-}
-// 打印符号表
-void print_symbol_table() {
-  printf("   Num:    Value  Size Type    Bind   Vis      Ndx  Name\n");
-  for (int i = 0; i < elf_file->symtab_Nmu; i++) {
-    Elf32_Sym *sym = &elf_file->symtab[i];
-    const char *type = get_symbol_type(ELF32_ST_TYPE(sym->st_info));
-    const char *bind = get_symbol_bind(ELF32_ST_BIND(sym->st_info));
-    const char *vis = get_symbol_vis(sym->st_other);
-    const char *ndx = get_symbol_ndx(sym->st_shndx);
-    const char *name = &elf_file->shstrtab[sym->st_name];
-
-    // 打印符号表的每一行
-    printf("%5d: %08x %5u %-7s %-6s %-8s %-4s  %s\n",
-          i, sym->st_value, sym->st_size, type, bind, vis, ndx, name);
-  }
-}
 
 
 static long load_img() {
@@ -193,7 +137,7 @@ for (int i = 0; i < elf_file->ehdr->e_shnum; i++){
   }
 }
 fclose(fp);
-print_symbol_table();
+//print_symbol_table();
 }
 
 
