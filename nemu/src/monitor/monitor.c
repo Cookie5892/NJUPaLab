@@ -164,7 +164,7 @@ void print_section_headers() {
       }
 
       // 打印节头信息
-      printf("  [%2d] %-17s %-15s %08x %06x %06x %02x %3s %3s %1s %1d %1d %1d\n",
+      printf("  [%2d] %-17s %-15s %08x %06x %06x %02x %1s %1s %1s %1d %1d %1d\n",
             i, name, type, shdr->sh_addr, shdr->sh_offset, shdr->sh_size,
             shdr->sh_entsize,
             (shdr->sh_flags & SHF_ALLOC ? "A" : ""),
