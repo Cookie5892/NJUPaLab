@@ -137,7 +137,7 @@ int isa_exec_once(Decode *s) {
 }
 
 static void print_ftrace(Decode *s, bool c_or_r){
-  char * fun_name = ftrace(s->dnpc);
+  char * fun_name = ftrace(s->pc);
   static int space_num = 1;
   printf("0x%08x:", s->pc);
   for( int i = 0; i < space_num; i ++){
