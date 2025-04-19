@@ -141,22 +141,19 @@ int isa_exec_once(Decode *s) {
 static char ftacebuf_log[MAX_ftace_log][256] = {0};
 static int ftace_num = 0;
 static void printbuf_ftrace(Decode *s, bool c_or_r){
-  char * fun_name = ftrace(s->pc);
+  char * fun_name = ftrace(s->dnpc);
   static int space_num = 1;
   char *p = ftacebuf_log[ftace_num];
   p += snprintf(p, 256, FMT_WORD ":", s->pc);
-  //printf("0x%08x:", s->pc);
   for( int i = 0; i < space_num; i ++){
     p += snprintf(p, 2, "%s", " ");
   } 
 
   if (c_or_r){
     p += snprintf(p, 64, "call [%s@0x%08x]", fun_name, s->dnpc);
-    //printf("call [%s@0x%08x]\n", fun_name, s->dnpc);
     space_num += 2;
   }else {
     p += snprintf(p, 32, "ret [%s]", fun_name);
-    //printf("ret [%s]\n", fun_name);
     space_num = (space_num >= 2) ? space_num -2 : 0 ;
   }
 
