@@ -137,6 +137,7 @@ void print_symbol_table() {
           i, sym->st_value, sym->st_size, type, bind, vis, ndx, name);
   }
 }
+// 打印节头
 void print_section_headers() {
   printf("Section Headers:\n");
   printf("  [Nr] Name              Type            Addr     Off    Size   ES Flg Lk Inf Al\n");
@@ -173,6 +174,9 @@ void print_section_headers() {
             shdr->sh_link, shdr->sh_info, shdr->sh_addralign);
   }
 }
+
+
+//读取elf文件
 static void read_elf( const char *elfname){
   if (elfname == NULL){
     Log("Unable to open elf file.");
