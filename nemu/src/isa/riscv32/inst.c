@@ -24,7 +24,8 @@
 void disassemble(char *str, int size, uint64_t pc, uint8_t *code, int nbyte);
 static void iringbuf(Decode *s);
 char *ftrace(vaddr_t pc);
-static void print_ftrace(Decode *s, bool c_or_r);
+static void printbuf_ftrace(Decode *s, bool c_or_r);
+static void ftace_printf();
 
 enum {
   TYPE_I, TYPE_U, TYPE_S,
@@ -90,8 +91,8 @@ static int decode_exec(Decode *s) {
   INSTPAT("??????? ????? ????? 000 ????? 01000 11", sb     , S, Mw(src1 + imm, 1, src2));
 
   INSTPAT("???????????? ????? 000 ????? 0010011"  , addi   , I, R(rd) = src1 + imm);
-  INSTPAT("???????????????????? ????? 1101111"    , jal    , UJ,R(rd) = s->pc + 4; s->dnpc = s->pc + imm; print_ftrace(s, true));
-  INSTPAT("???????????? ????? 000 ????? 1100111"  , jalr   , I ,s->dnpc = (src1 + imm) & ~ 1; if(rd != 0) R(rd) = s->pc + 4; if (rd == 0) print_ftrace(s, false); if (rd == 1) print_ftrace(s, true));
+  INSTPAT("???????????????????? ????? 1101111"    , jal    , UJ,R(rd) = s->pc + 4; s->dnpc = s->pc + imm; printbuf_ftrace(s, true));
+  INSTPAT("???????????? ????? 000 ????? 1100111"  , jalr   , I ,s->dnpc = (src1 + imm) & ~ 1; if(rd != 0) R(rd) = s->pc + 4; if (rd == 0) printbuf_ftrace(s, false); if (rd == 1) printbuf_ftrace(s, true));
   INSTPAT("??????? ????? ????? 010 ????? 0100011" , sw     , S ,Mw(src1 + imm, 4, src2));
   INSTPAT("??????? ????? ????? 000 ????? 1100011" , beq    , B ,if(src1 == src2 ) s->dnpc = s->pc + imm);
   INSTPAT("??????? ????? ????? 010 ????? 0000011" , lw     , I ,R(rd) = Mr(src1 + imm, 4));
@@ -121,7 +122,7 @@ static int decode_exec(Decode *s) {
   INSTPAT("??????? ????? ????? 111 ????? 1100011" , bgeq   , B ,if(src1 >= src2) s->dnpc= s->pc + imm);
   INSTPAT("0000000 ????? ????? 001 ????? 0010011" , slli   , I ,R(rd) = src1 << (imm & 0x1F));
 
-  INSTPAT("0000000 00001 00000 000 00000 11100 11", ebreak , N, NEMUTRAP(s->pc, R(10))); // R(10) is $a0
+  INSTPAT("0000000 00001 00000 000 00000 11100 11", ebreak , N, NEMUTRAP(s->pc, R(10)); ftace_printf()); // R(10) is $a0
   INSTPAT("??????? ????? ????? ??? ????? ????? ??", inv    , N, INV(s->pc));
   INSTPAT_END();
 
@@ -136,23 +137,45 @@ int isa_exec_once(Decode *s) {
   return decode_exec(s);
 }
 
-static void print_ftrace(Decode *s, bool c_or_r){
+#define MAX_ftace_log 128
+static char ftacebuf_log[MAX_ftace_log][256] = {0};
+static int ftace_num = 0;
+static void printbuf_ftrace(Decode *s, bool c_or_r){
   char * fun_name = ftrace(s->pc);
   static int space_num = 1;
-  printf("0x%08x:", s->pc);
+  char *p = ftacebuf_log[ftace_num];
+  p += snprintf(p, 256, FMT_WORD ":", s->pc);
+  //printf("0x%08x:", s->pc);
   for( int i = 0; i < space_num; i ++){
-    putchar(' ');
+    p += snprintf(p, 2, "%s", " ");
   } 
 
   if (c_or_r){
-    printf("call [%s@0x%08x]\n", fun_name, s->dnpc);
+    p += snprintf(p, 64, "call [%s@0x%08x]", fun_name, s->dnpc);
+    //printf("call [%s@0x%08x]\n", fun_name, s->dnpc);
     space_num += 2;
   }else {
-    printf("ret [%s]\n", fun_name);
+    p += snprintf(p, 32, "ret [%s]", fun_name);
+    //printf("ret [%s]\n", fun_name);
     space_num = (space_num >= 2) ? space_num -2 : 0 ;
   }
-}
 
+  if (ftace_num >= MAX_ftace_log - 1) {
+    ftace_num = 0;
+    } else {
+        ftace_num++;
+      }
+  }
+
+static void ftace_printf(){
+  if (ftace_num > MAX_ftace_log){
+    printf("函数调用溢出\n");
+    return;
+  }
+  for (int i = 0; i < ftace_num; i++){
+    printf("%s\n", ftacebuf_log[i]);
+  }
+}
 
 #define MAX_iringbuf_log 16
 static char iringbuf_log[MAX_iringbuf_log][128] = {0};
