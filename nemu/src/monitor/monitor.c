@@ -245,7 +245,7 @@ print_section_headers();
 //ftrace
 char *ftrace(vaddr_t pc){
   for (int i = 0; i < elf_file->symtab_Nmu; i++){
-    if (elf_file->symtab[i].st_info == STT_FUNC ){
+    if (ELF32_ST_TYPE(elf_file->symtab[i].st_info) == STT_FUNC ){
       if (pc >= elf_file->symtab[i].st_value && pc < (elf_file->symtab[i].st_value + elf_file->symtab[i].st_size))
       return &elf_file->shstrtab[elf_file->symtab[i].st_name];//返回字符串的起始地址，
     }
