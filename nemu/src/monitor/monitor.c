@@ -137,6 +137,42 @@ void print_symbol_table() {
           i, sym->st_value, sym->st_size, type, bind, vis, ndx, name);
   }
 }
+void print_section_headers() {
+  printf("Section Headers:\n");
+  printf("  [Nr] Name              Type            Addr     Off    Size   ES Flg Lk Inf Al\n");
+
+  for (int i = 0; i < elf_file->ehdr->e_shnum; i++) {
+      Elf32_Shdr *shdr = &elf_file->shdr_table[i];
+      const char *name = &elf_file->shstrtab[shdr->sh_name]; // 从 shstrtab 获取节名称
+
+      // 获取节类型的字符串表示
+      const char *type;
+      switch (shdr->sh_type) {
+          case SHT_NULL:     type = "NULL"; break;
+          case SHT_PROGBITS: type = "PROGBITS"; break;
+          case SHT_SYMTAB:   type = "SYMTAB"; break;
+          case SHT_STRTAB:   type = "STRTAB"; break;
+          case SHT_RELA:     type = "RELA"; break;
+          case SHT_HASH:     type = "HASH"; break;
+          case SHT_DYNAMIC:  type = "DYNAMIC"; break;
+          case SHT_NOTE:     type = "NOTE"; break;
+          case SHT_NOBITS:   type = "NOBITS"; break;
+          case SHT_REL:      type = "REL"; break;
+          case SHT_SHLIB:    type = "SHLIB"; break;
+          case SHT_DYNSYM:   type = "DYNSYM"; break;
+          default:           type = "UNKNOWN"; break;
+      }
+
+      // 打印节头信息
+      printf("  [%2d] %-17s %-15s %08x %06x %06x %02x %3s %3s %3s %2d %3d %2d\n",
+            i, name, type, shdr->sh_addr, shdr->sh_offset, shdr->sh_size,
+            shdr->sh_entsize,
+            (shdr->sh_flags & SHF_ALLOC ? "A" : ""),
+            (shdr->sh_flags & SHF_EXECINSTR ? "X" : ""),
+            (shdr->sh_flags & SHF_WRITE ? "W" : ""),
+            shdr->sh_link, shdr->sh_info, shdr->sh_addralign);
+  }
+}
 static void read_elf( const char *elfname){
   if (elfname == NULL){
     Log("Unable to open elf file.");
@@ -201,6 +237,7 @@ for (int i = 0; i < elf_file->ehdr->e_shnum; i++){
 }
 fclose(fp);
 print_symbol_table();
+print_section_headers();
 }
 
 
