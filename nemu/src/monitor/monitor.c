@@ -50,9 +50,10 @@ static int difftest_port = 1234;
 typedef struct {
   Elf32_Ehdr *ehdr;
   Elf32_Shdr *shdr_table;
-  char *shstrtab;       //strtab文件结构是字符串拼形成的字符数组，不是字符指针数组
+  char *shstrtab;       //shstrtab文件结构是字符串拼形成的字符数组，不是字符指针数组
   Elf32_Sym *symtab;
   int symtab_Nmu;
+  char *strtab;
 
 }ElfFile;
 static ElfFile *elf_file;
@@ -129,7 +130,7 @@ void print_symbol_table() {
     const char *bind = get_symbol_bind(ELF32_ST_BIND(sym->st_info));//低四位
     const char *vis = get_symbol_vis(sym->st_other);
     const char *ndx = get_symbol_ndx(sym->st_shndx);
-    const char *name = &elf_file->shstrtab[sym->st_name];
+    const char *name = &elf_file->strtab[sym->st_name];
 
     // 打印符号表的每一行
     printf("%5d: %08x %5u %-7s %-6s %-8s %-4s  %s\n",
@@ -176,7 +177,7 @@ int ret2 = fread(elf_file->shdr_table, elf_file->ehdr->e_shentsize * elf_file->e
 assert(ret2 == 1);
 
 fseek(fp, elf_file->shdr_table[elf_file->ehdr->e_shstrndx].sh_offset, SEEK_SET);
-//为strtab分配内存空间,strtab是字节数组
+//为shstrtab分配内存空间,shstrtab是字节数组
 elf_file->shstrtab = malloc(elf_file->shdr_table[elf_file->ehdr->e_shstrndx].sh_size);
 int ret3 = fread(elf_file->shstrtab, elf_file->shdr_table[elf_file->ehdr->e_shstrndx].sh_size, 1, fp);
 assert(ret3 == 1);
@@ -189,6 +190,12 @@ for (int i = 0; i < elf_file->ehdr->e_shnum; i++){
       int ret4 = fread(elf_file->symtab, elf_file->shdr_table[i].sh_size, 1, fp);
       assert(ret4 == 1);
       elf_file->symtab_Nmu = elf_file->shdr_table[i].sh_size / sizeof(Elf32_Sym);
+      //为strtab分配内存空间
+      Elf64_Word sh_link = elf_file->shdr_table[i].sh_link;
+      fseek(fp, elf_file->shdr_table[sh_link].sh_offset, SEEK_SET);
+      elf_file->strtab = malloc(elf_file->shdr_table[sh_link].sh_size);
+      int ret5 = fread(elf_file->strtab, elf_file->shdr_table[sh_link].sh_size, 1, fp);
+      assert(ret5 == 1);
       break;
   }
 }
