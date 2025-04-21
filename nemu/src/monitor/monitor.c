@@ -130,10 +130,11 @@ void print_symbol_table() {
     const char *bind = get_symbol_bind(ELF32_ST_BIND(sym->st_info));//低四位
     const char *vis = get_symbol_vis(sym->st_other);
     const char *ndx = get_symbol_ndx(sym->st_shndx);
-    const char *name ;
-    if (ELF32_ST_TYPE(sym->st_info) == STT_SECTION){
+    // 根据符号类型选择字符串表
+    const char *name;
+    if (ELF32_ST_TYPE(sym->st_info) == STT_SECTION) {
       name = &elf_file->shstrtab[sym->st_name];
-    }else{
+    } else {
       name = &elf_file->strtab[sym->st_name];
     }
     // 打印符号表的每一行
