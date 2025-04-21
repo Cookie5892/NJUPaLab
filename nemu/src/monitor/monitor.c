@@ -131,7 +131,7 @@ void print_symbol_table() {
     const char *vis = get_symbol_vis(sym->st_other);
     const char *ndx = get_symbol_ndx(sym->st_shndx);
     const char *name = NULL;
-    if (ELF32_ST_TYPE(sym->st_info) == ELF32_ST_TYPE(sym->st_info)){
+    if (ELF32_ST_TYPE(sym->st_info) == STT_SECTION){
       name = &elf_file->shstrtab[sym->st_name];
     }else{
       name = &elf_file->strtab[sym->st_name];
