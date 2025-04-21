@@ -130,8 +130,12 @@ void print_symbol_table() {
     const char *bind = get_symbol_bind(ELF32_ST_BIND(sym->st_info));//低四位
     const char *vis = get_symbol_vis(sym->st_other);
     const char *ndx = get_symbol_ndx(sym->st_shndx);
-    const char *name = &elf_file->strtab[sym->st_name];
-
+    const char *name = NULL;
+    if (sym->st_info == ELF32_ST_TYPE(sym->st_info)){
+      name = &elf_file->shstrtab[sym->st_name];
+    }else{
+      name = &elf_file->strtab[sym->st_name];
+    }
     // 打印符号表的每一行
     printf("%5d: %08x %5u %-7s %-6s %-8s %-4s  %s\n",
           i, sym->st_value, sym->st_size, type, bind, vis, ndx, name);

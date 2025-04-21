@@ -154,7 +154,7 @@ static void printbuf_ftrace(Decode *s, bool c_or_r){
     space_num += 2;
   }else {
     p += snprintf(p, 32, "ret [%s]", fun_name);
-    space_num = (space_num >= 2) ? space_num -2 : 0 ;
+    space_num = (space_num >= 2) ? space_num - 2 : 0 ;
   }
 
   if (ftace_num >= MAX_ftace_log - 1) {
