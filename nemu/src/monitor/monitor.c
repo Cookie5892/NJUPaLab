@@ -130,7 +130,7 @@ void print_symbol_table() {
     const char *bind = get_symbol_bind(ELF32_ST_BIND(sym->st_info));//低四位
     const char *vis = get_symbol_vis(sym->st_other);
     const char *ndx = get_symbol_ndx(sym->st_shndx);
-    const char *name = NULL;
+    const char *name ;
     if (ELF32_ST_TYPE(sym->st_info) == STT_SECTION){
       name = &elf_file->shstrtab[sym->st_name];
     }else{
