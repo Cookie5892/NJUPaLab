@@ -232,9 +232,3 @@ config RT_CHECK
   default y
 
 endmenu
-
-config FTRACE
-  bool "Enable ftrace"
-  default y
-  help
-    complete pa2.2 tasks.
