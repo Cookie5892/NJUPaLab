@@ -1,5 +1,4 @@
 mainmenu "NEMU Configuration Menu"
-
 choice
   prompt "Base ISA"
   default ISA_riscv
@@ -123,14 +122,13 @@ config CC_ASAN
   bool "Enable address sanitizer"
   default n
 endmenu
-
+#menu是子菜单，相当于文件夹，mainmenu是顶级菜单
 menu "Testing and Debugging"
 
 
 config TRACE
   bool "Enable tracer"
   default y
-
 config TRACE_START
   depends on TRACE
   int "When tracing is enabled (unit: number of instructions)"
@@ -159,6 +157,25 @@ config DIFFTEST
   help
     Enable differential testing with a reference design.
     Note that this will significantly reduce the performance of NEMU.
+
+# trace 是否开启
+menu "trace_task"
+
+config TRACE_IRINGBUF
+  bool "Enable iringbuf"
+  default y
+
+config MTRACE
+  bool "Enable mtrace"
+  default y
+
+config FTRACE
+  bool "Enable ftrace"
+  default y
+  help
+    complete pa2.2 tasks.
+
+endmenu
 
 choice
   prompt "Reference design"

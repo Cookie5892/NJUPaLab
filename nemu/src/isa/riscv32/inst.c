@@ -143,25 +143,25 @@ static int ftace_num = 0;
 static void printbuf_ftrace(Decode *s, bool c_or_r){
   char * fun_name = ftrace(s->dnpc);
   static int space_num = 1;
-  char *p = ftacebuf_log[ftace_num];
-  p += snprintf(p, 256, FMT_WORD ":", s->pc);
-  for( int i = 0; i < space_num; i ++){
-    p += snprintf(p, 2, "%s", " ");
-  } 
+  char *p = ftacebuf_log[ftace_num % MAX_ftace_log];
+  p += snprintf(p, 256, FMT_WORD ": ", s->pc);
 
   if (c_or_r){
-    p += snprintf(p, 64, "call [%s@0x%08x]", fun_name, s->dnpc);
     space_num += 2;
+    for( int i = 0; i < space_num; i ++){
+    p += snprintf(p, 2, "%s", " ");
+  }
+    p += snprintf(p, 64, "call [%s@0x%08x]", fun_name, s->dnpc);
   }else {
-    p += snprintf(p, 32, "ret [%s]", fun_name);
     space_num = (space_num >= 2) ? space_num - 2 : 0 ;
+    for( int i = 0; i < space_num; i ++){
+    p += snprintf(p, 2, "%s", " ");
   }
 
-  if (ftace_num >= MAX_ftace_log - 1) {
-    ftace_num = 0;
-    } else {
-        ftace_num++;
-      }
+    p += snprintf(p, 32, "ret [%s]", fun_name);
+  }
+  ftace_num++;
+
   }
 
 static void ftace_printf(){
