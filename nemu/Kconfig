@@ -161,7 +161,7 @@ config DIFFTEST
 # trace 是否开启
 menu "trace_task"
 
-config TRACE_IRINGBUF
+config IRINGBUF
   bool "Enable iringbuf"
   default y
 
@@ -232,3 +232,9 @@ config RT_CHECK
   default y
 
 endmenu
+
+config FTRACE
+  bool "Enable ftrace"
+  default y
+  help
+    complete pa2.2 tasks.
