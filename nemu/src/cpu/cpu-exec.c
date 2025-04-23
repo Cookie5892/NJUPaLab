@@ -18,7 +18,9 @@
 #include <cpu/difftest.h>
 #include <locale.h>
 bool check_watchpoint();
+#ifdef CONFIG_IRTRACE_N_Y
 void iringbuf_prin();
+#endif
 
 /* The assembly code of instructions executed is only output to the screen
  * when the number of instructions executed is less than this value.
@@ -105,7 +107,7 @@ static void statistic() {
 
 void assert_fail_msg() {
   isa_reg_display();
-  iringbuf_prin();
+  IFDEF(CONFIG_IRTRACE_N_Y, iringbuf_prin());
   statistic();
   
 }
