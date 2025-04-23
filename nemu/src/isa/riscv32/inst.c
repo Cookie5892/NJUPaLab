@@ -165,7 +165,7 @@ static void printbuf_ftrace(Decode *s, bool c_or_r){
   }
 //打印ftrace
 static void ftace_printf(){
-  if (ftace_num > MAX_ftace_log){
+  if (ftace_num > CONFIG_FTRACE){
     printf("函数调用溢出\n");
     return;
   }

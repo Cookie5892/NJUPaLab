@@ -51,28 +51,20 @@ void init_mem() {
 }
 
 word_t paddr_read(paddr_t addr, int len) {
-  word_t add_ret = 0;
-  if (likely(in_pmem(addr))) {
-    add_ret = pmem_read(addr, len);
-  }else {
-    IFDEF(CONFIG_DEVICE, add_ret = mmio_read(addr, len)); 
+  if (likely(in_pmem(addr))){
+    word_t addr_data = pmem_read(addr, len);
+    IFDEF(CONFIG_MTRACE, printf("Memory read : addr = "FMT_PADDR", len = %d, data = 0x%08x\n", addr, len, addr_data));
+    return addr_data;
   }
-  printf("Memory read : addr = "FMT_PADDR", len = %d, data = 0x%08x\n", addr, len, add_ret);
-
-  if (!in_pmem(addr) && add_ret != 0) {
-    out_of_bound(addr);
-  }
-  return add_ret;
+  IFDEF(CONFIG_DEVICE, return mmio_read(addr, len));
+  out_of_bound(addr);
+  return 0;
 }
 
 void paddr_write(paddr_t addr, int len, word_t data) {
   if (likely(in_pmem(addr))) { 
-    pmem_write(addr, len, data); 
-    printf("Memory write: addr = "FMT_PADDR", len = %d, data = 0x%08x\n", addr, len, data);
-    return; 
-  }
-  IFDEF(CONFIG_DEVICE, mmio_write(addr, len, data); 
-  printf("Memory write: addr = "FMT_PADDR", len = %d, data = 0x%08x\n", addr, len, data)
-  return);
+    IFDEF(CONFIG_MTRACE ,printf("Memory write: addr = "FMT_PADDR", len = %d, data = 0x%08x\n", addr, len, data));
+    pmem_write(addr, len, data); return; }
+  IFDEF(CONFIG_DEVICE, mmio_write(addr, len, data); return);
   out_of_bound(addr);
 }

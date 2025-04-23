@@ -47,16 +47,7 @@ static char *diff_so_file = NULL;
 static char *img_file = NULL;
 static int difftest_port = 1234;
 
-typedef struct {
-  Elf32_Ehdr *ehdr;
-  Elf32_Shdr *shdr_table;
-  char *shstrtab;       //shstrtab文件结构是字符串拼形成的字符数组，不是字符指针数组
-  Elf32_Sym *symtab;
-  int symtab_Nmu;
-  char *strtab;
 
-}ElfFile;
-static ElfFile *elf_file;
 
 
 static long load_img() {
@@ -81,6 +72,18 @@ static long load_img() {
   return size;
 }
 
+#ifdef CONFIG_FTRACE
+//elf文件的读取
+typedef struct {
+  Elf32_Ehdr *ehdr;
+  Elf32_Shdr *shdr_table;
+  char *shstrtab;       //shstrtab文件结构是字符串拼形成的字符数组，不是字符指针数组
+  Elf32_Sym *symtab;
+  int symtab_Nmu;
+  char *strtab;
+
+}ElfFile;
+static ElfFile *elf_file;
 /// 获取符号类型的字符串表示
 static const char *get_symbol_type(unsigned char type) {
   switch (type) {
@@ -92,7 +95,6 @@ static const char *get_symbol_type(unsigned char type) {
     default:         return "UNKNOWN";
   }
 }
-
 // 获取符号绑定的字符串表示
 static const char *get_symbol_bind(unsigned char bind) {
   switch (bind) {
@@ -102,7 +104,6 @@ static const char *get_symbol_bind(unsigned char bind) {
     default:         return "UNKNOWN";
   }
 }
-
 // 获取符号可见性的字符串表示
 static const char *get_symbol_vis(unsigned char vis) {
   switch (vis) {
@@ -113,7 +114,6 @@ static const char *get_symbol_vis(unsigned char vis) {
     default:            return "UNKNOWN";
   }
 }
-
 static const char *get_symbol_ndx(Elf32_Section ndx){
   switch(ndx){
     case SHN_UNDEF:   return "UND";
@@ -179,10 +179,22 @@ void print_section_headers() {
             shdr->sh_link, shdr->sh_info, shdr->sh_addralign);
   }
 }
+//ftrace
+char *ftrace(vaddr_t pc){
+  for (int i = 0; i < elf_file->symtab_Nmu; i++){
+    if (ELF32_ST_TYPE(elf_file->symtab[i].st_info) == STT_FUNC ){
+      if (pc >= elf_file->symtab[i].st_value && pc < (elf_file->symtab[i].st_value + elf_file->symtab[i].st_size))
+      return &elf_file->strtab[elf_file->symtab[i].st_name];//返回字符串的起始地址，
+    }
+  }
+  return "???";
+}
+#endif
 
 
 //读取elf文件
 static void read_elf( const char *elfname){
+  #ifdef CONFIG_FTRACE
   if (elfname == NULL){
     Log("Unable to open elf file.");
     return;
@@ -247,20 +259,12 @@ for (int i = 0; i < elf_file->ehdr->e_shnum; i++){
 fclose(fp);
 print_symbol_table();
 print_section_headers();
+#else
+  free(elfname);
+  return;
+  #endif
 }
 
-
-
-//ftrace
-char *ftrace(vaddr_t pc){
-  for (int i = 0; i < elf_file->symtab_Nmu; i++){
-    if (ELF32_ST_TYPE(elf_file->symtab[i].st_info) == STT_FUNC ){
-      if (pc >= elf_file->symtab[i].st_value && pc < (elf_file->symtab[i].st_value + elf_file->symtab[i].st_size))
-      return &elf_file->strtab[elf_file->symtab[i].st_name];//返回字符串的起始地址，
-    }
-  }
-  return "???";
-}
 
 
 static int parse_args(int argc, char *argv[]) {
