@@ -136,16 +136,14 @@ int isa_exec_once(Decode *s) {
   iringbuf(s);
   return decode_exec(s);
 }
-
-#ifdef CONFIG_FTRACE
 //ftrace
-#define MAX_ftace_log 128
-static char ftacebuf_log[MAX_ftace_log][256] = {0};
+#ifdef CONFIG_FTRACE
+static char ftacebuf_log[CONFIG_FTRACE][256] = {0};
 static int ftace_num = 0;
 static void printbuf_ftrace(Decode *s, bool c_or_r){
   char * fun_name = ftrace(s->dnpc);
   static int space_num = 1;
-  char *p = ftacebuf_log[ftace_num % MAX_ftace_log];
+  char *p = ftacebuf_log[ftace_num % CONFIG_FTRACE];
   p += snprintf(p, 256, FMT_WORD ": ", s->pc);
 
   if (c_or_r){
@@ -177,11 +175,9 @@ static void ftace_printf(){
 }
 #endif
 
-
-#ifdef CONFIG_IRINGBUF
 //iringbuf
-#define MAX_iringbuf_log 16
-static char iringbuf_log[MAX_iringbuf_log][128] = {0};
+#ifdef CONFIG_IRINGBUF
+static char iringbuf_log[CONFIG_IRINGBUF][128] = {0};
 static int i = 0;
 static void iringbuf(Decode *s) {
   char *p = s->logbuf;
@@ -202,15 +198,15 @@ static void iringbuf(Decode *s) {
       MUXDEF(CONFIG_ISA_x86, s->snpc, s->pc), (uint8_t *)&s->isa.inst, ilen);
 
   // 将当前指令信息写入 iringbuf 中
-  strncpy(iringbuf_log[i % MAX_iringbuf_log], s->logbuf, sizeof(iringbuf_log[0]) - 1);
-  iringbuf_log[i % MAX_iringbuf_log][sizeof(iringbuf_log[0]) - 1] = '\0'; // 确保字符串终止
+  strncpy(iringbuf_log[i % CONFIG_IRINGBUF], s->logbuf, sizeof(iringbuf_log[0]) - 1);
+  iringbuf_log[i % CONFIG_IRINGBUF][sizeof(iringbuf_log[0]) - 1] = '\0'; // 确保字符串终止
   i++;
 }
 //打印iringbuf
 void iringbuf_prin(){
-  int num_log = i >= MAX_iringbuf_log ? MAX_iringbuf_log : i ;
+  int num_log = i >= CONFIG_IRINGBUF ? CONFIG_IRINGBUF : i ;
     for(int j = 0; j < num_log; j++){
-      if( j == (i-1) % MAX_iringbuf_log){
+      if( j == (i-1) % CONFIG_IRINGBUF){
         printf("------->%s\n", iringbuf_log[j]);
       }else {
         printf("        %s\n", iringbuf_log[j]);
