@@ -22,10 +22,16 @@
 #define Mr vaddr_read
 #define Mw vaddr_write
 void disassemble(char *str, int size, uint64_t pc, uint8_t *code, int nbyte);
+
+#if CONFIG_IRINGBUF
 static void iringbuf(Decode *s);
+#endif
+
+#if CONFIG_FTRACE
 char *ftrace(vaddr_t pc);
-static void printbuf_ftrace(Decode *s, bool c_or_r);
 static void ftace_printf();
+static void printbuf_ftrace(Decode *s, bool c_or_r);
+#endif
 
 enum {
   TYPE_I, TYPE_U, TYPE_S,
@@ -91,8 +97,8 @@ static int decode_exec(Decode *s) {
   INSTPAT("??????? ????? ????? 000 ????? 01000 11", sb     , S, Mw(src1 + imm, 1, src2));
 
   INSTPAT("???????????? ????? 000 ????? 0010011"  , addi   , I, R(rd) = src1 + imm);
-  INSTPAT("???????????????????? ????? 1101111"    , jal    , UJ,R(rd) = s->pc + 4; s->dnpc = s->pc + imm; printbuf_ftrace(s, true));
-  INSTPAT("???????????? ????? 000 ????? 1100111"  , jalr   , I ,s->dnpc = (src1 + imm) & ~ 1; if(rd != 0) R(rd) = s->pc + 4; if (rd == 0) printbuf_ftrace(s, false); if (rd == 1) printbuf_ftrace(s, true));
+  INSTPAT("???????????????????? ????? 1101111"    , jal    , UJ,R(rd) = s->pc + 4; s->dnpc = s->pc + imm; IFDEF(CONFIG_FTRACE_N_Y, printbuf_ftrace(s, true)));
+  INSTPAT("???????????? ????? 000 ????? 1100111"  , jalr   , I ,s->dnpc = (src1 + imm) & ~ 1; if(rd != 0) R(rd) = s->pc + 4; IFDEF(CONFIG_FTRACE_N_Y, if (rd == 0) printbuf_ftrace(s, false); if (rd == 1) printbuf_ftrace(s, true)));
   INSTPAT("??????? ????? ????? 010 ????? 0100011" , sw     , S ,Mw(src1 + imm, 4, src2));
   INSTPAT("??????? ????? ????? 000 ????? 1100011" , beq    , B ,if(src1 == src2 ) s->dnpc = s->pc + imm);
   INSTPAT("??????? ????? ????? 010 ????? 0000011" , lw     , I ,R(rd) = Mr(src1 + imm, 4));
@@ -122,7 +128,7 @@ static int decode_exec(Decode *s) {
   INSTPAT("??????? ????? ????? 111 ????? 1100011" , bgeq   , B ,if(src1 >= src2) s->dnpc= s->pc + imm);
   INSTPAT("0000000 ????? ????? 001 ????? 0010011" , slli   , I ,R(rd) = src1 << (imm & 0x1F));
 
-  INSTPAT("0000000 00001 00000 000 00000 11100 11", ebreak , N, NEMUTRAP(s->pc, R(10)); ftace_printf()); // R(10) is $a0
+  INSTPAT("0000000 00001 00000 000 00000 11100 11", ebreak , N, NEMUTRAP(s->pc, R(10)); IFDEF(CONFIG_FTRACE_N_Y, ftace_printf())); // R(10) is $a0
   INSTPAT("??????? ????? ????? ??? ????? ????? ??", inv    , N, INV(s->pc));
   INSTPAT_END();
 
@@ -137,7 +143,7 @@ int isa_exec_once(Decode *s) {
   return decode_exec(s);
 }
 //ftrace
-#ifdef CONFIG_FTRACE
+#ifdef CONFIG_FTRACE_N_Y
 static char ftacebuf_log[CONFIG_FTRACE][256] = {0};
 static int ftace_num = 0;
 static void printbuf_ftrace(Decode *s, bool c_or_r){
@@ -163,7 +169,8 @@ static void printbuf_ftrace(Decode *s, bool c_or_r){
   ftace_num++;
 
   }
-//打印ftrace
+
+  //打印ftrace
 static void ftace_printf(){
   if (ftace_num > CONFIG_FTRACE){
     printf("函数调用溢出\n");
@@ -175,8 +182,10 @@ static void ftace_printf(){
 }
 #endif
 
+
+
 //iringbuf
-#ifdef CONFIG_IRINGBUF
+#ifdef CONFIG_IRTRACE_N_Y
 static char iringbuf_log[CONFIG_IRINGBUF][128] = {0};
 static int i = 0;
 static void iringbuf(Decode *s) {

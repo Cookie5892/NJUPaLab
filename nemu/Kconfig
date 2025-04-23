@@ -162,18 +162,26 @@ config DIFFTEST
 # trace 是否开启
 menu "trace_task"
 
-config IRINGBUF
-  depends on TRACE
-  int "When iringbuf is enabled (unit: number of instructions)"
-  default 16
+config IRTRACE_N_Y
+  bool "Enable iringbuf"
+  default y
+
+config FTRACE_N_Y
+  bool "Enable ftrace"
+  default y
 
 config MTRACE
-  depends on TRACE
   bool "mtrace"
   default y
 
+config IRINGBUF
+  depends on IRTRACE_N_Y
+  int "When iringbuf is enabled (unit: number of instructions)"
+  default 16
+
+
 config FTRACE
-  depends on TRACE
+  depends on FTRACE_N_Y
   int "When iringbuf is enabled (unit: number of instructions)"
   default 128
   help

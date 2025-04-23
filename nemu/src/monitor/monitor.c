@@ -72,7 +72,7 @@ static long load_img() {
   return size;
 }
 
-#ifdef CONFIG_FTRACE
+#ifdef CONFIG_FTRACE_N_Y
 //elf文件的读取
 typedef struct {
   Elf32_Ehdr *ehdr;
@@ -189,12 +189,8 @@ char *ftrace(vaddr_t pc){
   }
   return "???";
 }
-#endif
-
-
 //读取elf文件
 static void read_elf( const char *elfname){
-  #ifdef CONFIG_FTRACE
   if (elfname == NULL){
     Log("Unable to open elf file.");
     return;
@@ -203,7 +199,6 @@ static void read_elf( const char *elfname){
     elf_file = malloc(sizeof(ElfFile));
     assert(elf_file != NULL);
   }
-
   FILE *fp = fopen(elfname, "rb");
   Assert(fp, "Can not open elf '%s'", elfname);
 
@@ -259,11 +254,9 @@ for (int i = 0; i < elf_file->ehdr->e_shnum; i++){
 fclose(fp);
 print_symbol_table();
 print_section_headers();
-#else
-  free(elfname);
-  return;
-  #endif
 }
+
+#endif
 
 
 
@@ -284,7 +277,7 @@ static int parse_args(int argc, char *argv[]) {
       case 'p': sscanf(optarg, "%d", &difftest_port); break;
       case 'l': log_file = optarg; break;
       case 'd': diff_so_file = optarg; break;
-      case 'e': read_elf(optarg); break;
+      case 'e': IFDEF(CONFIG_FTRACE_N_Y, read_elf(optarg)); break;
       case 1: img_file = optarg; return 0;
       default:
         printf("Usage: %s [OPTION...] IMAGE [args]\n\n", argv[0]);
