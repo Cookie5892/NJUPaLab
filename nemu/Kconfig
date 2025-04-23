@@ -163,16 +163,19 @@ config DIFFTEST
 menu "trace_task"
 
 config IRINGBUF
-  bool "Enable iringbuf"
-  default y
+  depends on TRACE
+  int "When iringbuf is enabled (unit: number of instructions)"
+  default 16
 
 config MTRACE
-  bool "Enable mtrace"
+  depends on TRACE
+  bool "mtrace"
   default y
 
 config FTRACE
-  bool "Enable ftrace"
-  default y
+  depends on TRACE
+  int "When iringbuf is enabled (unit: number of instructions)"
+  default 128
   help
     complete pa2.2 tasks.
 

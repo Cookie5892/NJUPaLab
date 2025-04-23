@@ -137,6 +137,8 @@ int isa_exec_once(Decode *s) {
   return decode_exec(s);
 }
 
+#ifdef CONFIG_FTRACE
+//ftrace
 #define MAX_ftace_log 128
 static char ftacebuf_log[MAX_ftace_log][256] = {0};
 static int ftace_num = 0;
@@ -163,7 +165,7 @@ static void printbuf_ftrace(Decode *s, bool c_or_r){
   ftace_num++;
 
   }
-
+//打印ftrace
 static void ftace_printf(){
   if (ftace_num > MAX_ftace_log){
     printf("函数调用溢出\n");
@@ -173,7 +175,11 @@ static void ftace_printf(){
     printf("%s\n", ftacebuf_log[i]);
   }
 }
+#endif
 
+
+#ifdef CONFIG_IRINGBUF
+//iringbuf
 #define MAX_iringbuf_log 16
 static char iringbuf_log[MAX_iringbuf_log][128] = {0};
 static int i = 0;
@@ -200,7 +206,6 @@ static void iringbuf(Decode *s) {
   iringbuf_log[i % MAX_iringbuf_log][sizeof(iringbuf_log[0]) - 1] = '\0'; // 确保字符串终止
   i++;
 }
-
 //打印iringbuf
 void iringbuf_prin(){
   int num_log = i >= MAX_iringbuf_log ? MAX_iringbuf_log : i ;
@@ -212,3 +217,4 @@ void iringbuf_prin(){
       }
     }
 }
+#endif
