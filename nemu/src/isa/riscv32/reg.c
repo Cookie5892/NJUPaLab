@@ -46,3 +46,11 @@ word_t isa_reg_str2val(const char *s, bool *success)
   *success = false;
   return 0;
 }
+
+//根据状态，获取寄存器名
+const char *gain_name(int indx_reg){
+  if (indx_reg < 0 || indx_reg >= 32) {
+    return NULL; // 返回 NULL 表示无效索引
+  }
+  return regs[indx_reg];
+}
