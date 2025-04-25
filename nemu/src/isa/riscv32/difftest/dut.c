@@ -19,9 +19,10 @@
 const char *gain_name(int indx_reg);
 
 bool isa_difftest_checkregs(CPU_state *ref_r, vaddr_t pc) {
+  bool success_dut = true;
   if (cpu.pc != ref_r->pc){
     printf("pc real: 0x%08x---expectancy: 0x%08x\n", cpu.pc, ref_r->pc);
-    return false;
+    success_dut = false;
   }
   
   for (int i = 0; i < 32; i++){
@@ -30,10 +31,10 @@ bool isa_difftest_checkregs(CPU_state *ref_r, vaddr_t pc) {
       if (reg_name != NULL){
         printf("reg %s real: 0x%08x---expectancy: 0x%08x\n", reg_name, cpu.gpr[i], ref_r->gpr[i]);
       }
-      return false;
+      success_dut = false;
     }
   }
-  return true;
+  return success_dut ? true : false;
 }
 
 void isa_difftest_attach() {
