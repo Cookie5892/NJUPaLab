@@ -47,7 +47,7 @@ word_t isa_reg_str2val(const char *s, bool *success)
   return 0;
 }
 
-#ifdef CONFIG_DIFFTEST
+
 //根据状态，获取寄存器名
 const char *gain_name(int indx_reg){
   if (indx_reg < 0 || indx_reg >= 32) {
@@ -55,4 +55,3 @@ const char *gain_name(int indx_reg){
   }
   return regs[indx_reg];
 }
-#endif
