@@ -62,9 +62,9 @@ preprocess-file:
         echo "Error: $(COLOR_RED)Please specify the source file using 'make preprocess-file SRC=<source_file>'$(COLOR_END)"; \
         exit 1; \
     fi
-	@mkdir -p $(dir $(OBJ_DIR)/$(SRC:.c=.i))
-	$(CC) -O2 $(INCLUDES) -E -o $(OBJ_DIR)/$(SRC:.c=.i) $(SRC)
-	@echo "Preprocessed file generated: $(OBJ_DIR)/$(SRC:.c=.i)"
+	@mkdir -p $(OBJ_DIR)
+	$(CC) -O2 $(INCLUDES) -E -o $(OBJ_DIR)/$(notdir $(SRC:.c=.i)) $(SRC)
+	@echo "Preprocessed file generated: $(OBJ_DIR)/$(notdir($(SRC:.c=.i)))"
 
 app: $(BINARY)
 

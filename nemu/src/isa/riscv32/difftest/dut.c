@@ -25,13 +25,13 @@ bool isa_difftest_checkregs(CPU_state *ref_r, vaddr_t pc) {
     if (cpu.gpr[i] != ref_r->gpr[i]){
       const char *reg_name = gain_name(i);
       if (reg_name != NULL){
-        printf("reg %s real: 0x%08x---expectancy: 0x%08x\n", reg_name, cpu.gpr[i], ref_r->gpr[i]);
+        printf("reg %s real: " FMT_WORD "---expectancy: " FMT_WORD "\n", reg_name, cpu.gpr[i], ref_r->gpr[i]);
       }
       success_dut = false;
     }
   }
   if (cpu.pc != ref_r->pc){
-    printf("pc real: 0x%08x---expectancy: 0x%08x\n", cpu.pc, ref_r->pc);
+    printf("pc real: " FMT_WORD "---expectancy: " FMT_WORD "\n", cpu.pc, ref_r->pc);
     success_dut = false;
   }
   
