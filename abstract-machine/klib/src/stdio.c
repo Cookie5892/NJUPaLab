@@ -79,7 +79,18 @@ static int kstrlen(const char *str) {
 }
 
 int printf(const char *fmt, ...) {
-  panic("Not implemented");
+  char buffer[1024]; // 临时缓冲区，用于存储格式化后的字符串
+  va_list ap;
+  va_start(ap, fmt);
+  int len = vsnprintf(buffer, sizeof(buffer), fmt, ap); // 格式化字符串
+  va_end(ap);
+
+  // 将缓冲区内容逐字符输出到标准输出
+  for (int i = 0; i < len; i++) {
+    putch(buffer[i]); // 假设 putch 已实现，用于输出单个字符
+  }
+
+  return len; // 返回输出的字符数
 }
 
 int vsprintf(char *out, const char *fmt, va_list ap) {
