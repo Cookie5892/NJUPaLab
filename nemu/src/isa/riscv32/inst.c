@@ -180,7 +180,6 @@ static void printbuf_ftrace(Decode *s, bool c_or_r){
 static void ftace_printf(){
   if (ftace_num > CONFIG_FTRACE){
     printf("函数调用溢出\n");
-    return;
   }
   for (int i = 0; i < ftace_num; i++){
     printf("%s\n", ftacebuf_log[i]);
