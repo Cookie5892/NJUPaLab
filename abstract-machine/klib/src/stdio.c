@@ -58,6 +58,12 @@ int vsprintf(char *out, const char *fmt, va_list ap) {
         }
       break;
       }
+
+      case 'c':{
+        char str = (char)va_arg(ap, int);
+        *dst++ = str;
+        break;
+      }
       default:{
         *dst++ = '%';
         *dst++ = *p;
@@ -143,6 +149,16 @@ int vsnprintf(char *out, size_t n, const char *fmt, va_list ap) {
           written++;
           str++;
         }
+        break;
+      }
+
+      case 'c':{
+        char str = (char)va_arg(ap, int);
+        if (remaining > 0){
+          *dst++ = str;
+          remaining--;
+        }
+        written++;
         break;
       }
 
