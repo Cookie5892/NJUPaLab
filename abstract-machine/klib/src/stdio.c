@@ -29,8 +29,13 @@ int vsprintf(char *out, const char *fmt, va_list ap) {
       continue;
     }
 
-    p++; //跳过%
-// 判断格式类型
+    p++; // 跳过%
+    // 检查 % 后面是否是字符串结束符
+    if (*p == '\0') {
+      *dst++ = '%';
+      break;
+    }
+    // 判断格式类型
     switch (*p) {
       case 'd': {
         int value = va_arg(ap, int);
@@ -85,20 +90,14 @@ int sprintf(char *out, const char *fmt, ...) {
   return result;
 }
 
-int snprintf(char *out, size_t n, const char *fmt, ...) {
-  va_list ap;
-  va_start(ap, fmt);
-  int result = vsnprintf(out, n, fmt, ap);
-  va_end(ap);
-  return result;
-}
 
-int vsnprintf(char *out, size_t n, const char *fmt, va_list ap) {
+// 提取公共的格式化逻辑
+static int vsnprintf_core(char *out, size_t n, const char *fmt, va_list ap) {
   char *dst = out;
   const char *p = fmt;
   if (n == 0 ) return 0;
   size_t remaining = n > 0 ? n - 1 : 0;
-  size_t written = 0; //记录生成的完整字符串的长度，包括被截断的部分
+  size_t written = 0; // 记录生成的完整字符串的长度，包括被截断的部分
 
   while (*p != '\0'){
     if (*p != '%'){
@@ -112,6 +111,15 @@ int vsnprintf(char *out, size_t n, const char *fmt, va_list ap) {
     }
 
     p++;
+    // 检查 % 后面是否是字符串结束符
+    if (*p == '\0') {
+      if (remaining > 0) {
+        *dst++ = '%';
+        remaining--;
+      }
+      written++;
+      break;
+    }
     switch (*p){
       case 'd':{
         int value = va_arg(ap, int);
@@ -185,5 +193,18 @@ int vsnprintf(char *out, size_t n, const char *fmt, va_list ap) {
 
   return written;
 }
+
+int snprintf(char *out, size_t n, const char *fmt, ...) {
+  va_list ap;
+  va_start(ap, fmt);
+  int result = vsnprintf_core(out, n, fmt, ap);
+  va_end(ap);
+  return result;
+}
+
+int vsnprintf(char *out, size_t n, const char *fmt, va_list ap) {
+  return vsnprintf_core(out, n, fmt, ap);
+}
+
 
 #endif
