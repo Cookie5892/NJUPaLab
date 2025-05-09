@@ -5,9 +5,12 @@
 
 void __am_input_keybrd(AM_INPUT_KEYBRD_T *kbd) {
   uint32_t keycode = inl(KBD_ADDR);
+  kbd->keydown = (keycode & KEYDOWN_MASK) ? true : false;
+  kbd->keycode = keycode & ~KEYDOWN_MASK;
+
   if (kbd->keydown){
-    kbd->keycode = keycode;
+    return;
   }else{
-    kbd->keycode = AM_KEY_NONE;
+  kbd->keycode = AM_KEY_NONE;
   }
 }
