@@ -164,15 +164,15 @@ menu "trace_task"
 
 config IRTRACE_N_Y
   bool "Enable iringbuf"
-  default y
+  default n 
 
 config FTRACE_N_Y
   bool "Enable ftrace"
-  default y
+  default n
 
 config MTRACE
   bool "mtrace"
-  default y
+  default n
 
 config IRINGBUF
   depends on IRTRACE_N_Y
@@ -182,10 +182,16 @@ config IRINGBUF
 
 config FTRACE
   depends on FTRACE_N_Y
-  int "When iringbuf is enabled (unit: number of instructions)"
+  int "When itrace is enabled (unit: number of instructions)"
   default 128
   help
     complete pa2.2 tasks.
+
+config DTRACE
+  bool "dtrace"
+  default n
+
+
 
 endmenu
 
