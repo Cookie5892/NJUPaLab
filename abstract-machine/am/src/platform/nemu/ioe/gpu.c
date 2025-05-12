@@ -13,10 +13,13 @@ void __am_gpu_init() {
 }
 
 void __am_gpu_config(AM_GPU_CONFIG_T *cfg) {
+  uint32_t vga_d = inl(SYNC_ADDR);
+  uint16_t vga_width = vga_d >> 16;
+  uint16_t vag_height = vga_d;
   *cfg = (AM_GPU_CONFIG_T) {
     .present = true, .has_accel = false,
-    .width = 400, .height = 300,
-    .vmemsz = 400 * 300 * 4 
+    .width = vga_width, .height = vag_height,
+    .vmemsz = vag_height * vga_width * 4 
   };
 }
 
