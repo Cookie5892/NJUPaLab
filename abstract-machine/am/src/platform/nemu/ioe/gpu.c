@@ -17,7 +17,7 @@ void __am_gpu_config(AM_GPU_CONFIG_T *cfg) {
   uint32_t vga_height = vga_data & 0xffff;
   uint32_t vga_width = vga_data >> 16;
   *cfg = (AM_GPU_CONFIG_T) {
-    .present = true, .has_accel = true,
+    .present = true, .has_accel = false,
     .width = vga_width, .height = vga_height,
     .vmemsz = 0 
   };
