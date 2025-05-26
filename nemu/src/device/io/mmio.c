@@ -55,6 +55,7 @@ void add_mmio_map(const char *name, paddr_t addr, void *space, uint32_t len, io_
 
 /* bus interface */
 word_t mmio_read(paddr_t addr, int len) {
+  //fetch_mmio_map是根据addr将其映射为哪一个设备
   return map_read(addr, len, fetch_mmio_map(addr));
 }
 

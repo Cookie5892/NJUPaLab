@@ -149,6 +149,12 @@ image-dep: $(LIBS) $(IMAGE).elf
 .NOTPARALLEL: image-dep
 .PHONY: image image-dep archive run $(LIBS)
 
+### 添加一个伪目标，将指定文件生成.i文件
+preprocess-file:
+	@mkdir -p $(dir $(OUTFIL)) && echo + CPP $(INFIL)
+	@$(CC) -E -P -std=gnu11 $(CFLAGS) -o $(OUTFIL) $(realpath $(INFIL))
+
+
 ### Clean a single project (remove `build/`)
 clean:
 	rm -rf Makefile.html $(WORK_DIR)/build/
