@@ -63,7 +63,7 @@ preprocess-file:
         exit 1; \
     fi
 	@mkdir -p $(OBJ_DIR)
-	$(CC) -O2 -E -P -C $(INCLUDES) $(SRC) -o $(OBJ_DIR)/$(notdir $(SRC:.c=.i)) 
+	$(CC) -O2 -E -P $(INCLUDES) $(SRC) -o $(OBJ_DIR)/$(notdir $(SRC:.c=.i)) 
 	@echo "Preprocessed file generated: $(OBJ_DIR)/$(notdir($(SRC:.c=.i)))"
 
 app: $(BINARY)
