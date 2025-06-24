@@ -41,7 +41,7 @@ void *malloc(size_t size) {
   
 
 #if !(defined(__ISA_NATIVE__) && defined(__NATIVE_USE_KLIB__))
-  panic("Not implemented");
+  // panic("Not implemented"); // 注释掉，使用下面的实现
 #endif
 
   // 静态变量 addr 用于记录当前堆的分配位置
