@@ -40,9 +40,10 @@ static int format_core(char *out, size_t n, const char *fmt, va_list ap) {
         char buffer[32];
         char *temp = buffer;
         if (value < 0){
-          if (remaining){
+          if (remaining < 0){
             *dst++ = '-';
             remaining--;
+            value = -value;
           }
           written++;
         }
