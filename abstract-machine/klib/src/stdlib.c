@@ -41,11 +41,9 @@ void *malloc(size_t size) {
   
 
 #if !(defined(__ISA_NATIVE__) && defined(__NATIVE_USE_KLIB__))
-  // panic("Not implemented"); // 注释掉，使用下面的实现
-#endif
-
+  // 非native平台，使用自定义实现
   // 静态变量 addr 用于记录当前堆的分配位置
-  static void *addr =NULL;
+  static void *addr = NULL;
 
   // 如果 addr 尚未初始化，则将其设置为堆的起始地址
   if (addr == NULL) {
@@ -62,6 +60,11 @@ void *malloc(size_t size) {
   void *allocated = addr;
   addr = addr + size;
   return allocated;
+#else
+  // native平台，直接返回NULL或使用系统malloc
+  // 在这种情况下，通常会链接到系统的malloc
+  return NULL;
+#endif
 }
 
 void free(void *ptr) {
